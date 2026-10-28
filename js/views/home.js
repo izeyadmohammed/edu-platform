@@ -5,19 +5,15 @@ export default async function homeView(el) {
   const profile = store.profile;
   let courses = store.courses;
   
+  // فلترة الكورسات للطالب حسب صفه فقط
   if (profile?.role === 'student' && profile.grade) {
-    const filtered = courses.filter(c => c.grade === profile.grade);
-    if (filtered.length) courses = filtered;
+    courses = courses.filter(c => c.grade === profile.grade);
   }
 
   el.innerHTML = `
     <!-- Hero Section -->
     <section class="relative overflow-hidden rounded-3xl mb-12 p-10 md:p-16 border border-white/10 bg-gradient-to-br from-blue-900/40 to-purple-900/40 animate-fade-up">
-      <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
       <div class="relative z-10 max-w-3xl">
-        <span class="inline-block py-1 px-3 rounded-full bg-blue-500/20 text-blue-300 text-sm font-bold mb-6 border border-blue-500/30">
-          <i class="fa-solid fa-sparkles mr-2"></i> المرحلة القادمة من التعليم
-        </span>
         <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight">
           تعلّم بذكاء،<br>
           <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">وابني مستقبلك</span>
@@ -32,22 +28,17 @@ export default async function homeView(el) {
       </div>
     </section>
 
-    <!-- Stats -->
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-      ${statCard('fa-book', 'الكورسات', store.courses.length, 'text-blue-400')}
-      ${statCard('fa-user-tie', 'المدرسون', store.teachers.length, 'text-green-400')}
-      ${statCard('fa-play-circle', 'المحاضرات', store.lectures.length, 'text-purple-400')}
-      ${statCard('fa-clock', 'دعم متواصل', '24/7', 'text-orange-400')}
-    </section>
-
     <!-- Courses Section -->
     <section>
       <div class="flex items-center justify-between mb-8">
-        <h2 class="text-3xl font-black">أحدث <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">الكورسات</span></h2>
+        <h2 class="text-3xl font-black">
+          ${profile?.role === 'student' ? 'كورسات ' + escapeHtml(profile.grade || 'صفك') : 'أحدث'}
+          <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">الكورسات</span>
+        </h2>
         <a href="#/courses" class="text-sm font-bold text-blue-400 hover:text-blue-300 transition">عرض الكل <i class="fa-solid fa-arrow-left mr-1"></i></a>
       </div>
       
-      ${courses.length === 0 ? `<div class="glass-card p-12 text-center text-gray-400">لا توجد كورسات متاحة حالياً</div>` : ''}
+      ${courses.length === 0 ? `<div class="glass-card p-12 text-center text-gray-400">لا توجد كورسات متاحة لصفك حالياً</div>` : ''}
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         ${courses.slice(0, 9).map(c => `
@@ -73,16 +64,4 @@ export default async function homeView(el) {
       </div>
     </section>
   `;
-}
-
-function statCard(icon, label, val, colorClass) {
-  return `<div class="glass-card p-5 flex items-center gap-4">
-    <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center">
-      <i class="fa-solid ${icon} text-2xl ${colorClass}"></i>
-    </div>
-    <div>
-      <p class="text-2xl font-black">${val}</p>
-      <p class="text-xs font-bold text-gray-400">${label}</p>
-    </div>
-  </div>`;
 }

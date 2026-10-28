@@ -1,11 +1,10 @@
 import { store, supabase } from './config.js';
 
-// دالة لجلب الإعدادات
 async function getSettings() {
   const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
   if (data) {
     store.settings = data;
-    document.getElementById('page-title').textContent = data.platform_name;
+    document.getElementById('page-title').textContent = data.platform_name || 'منصة التعليم';
   }
 }
 
@@ -40,8 +39,6 @@ export function modal({ title = '', body = '', actions = '' }) {
 export async function renderHeader() {
   const h = document.getElementById('app-header');
   if (!h) return;
-  
-  // جلب الإعدادات لو مش محملة
   if (!store.settings) await getSettings();
   
   const p = store.profile;
@@ -87,14 +84,32 @@ export async function renderHeader() {
   };
 }
 
-export function renderFooter() {
+export async function renderFooter() {
   const f = document.getElementById('app-footer');
   if (!f) return;
+  if (!store.settings) await getSettings();
+  
+  const s = store.settings || {};
+  const socials = [
+    { key: 'facebook', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
+    { key: 'whatsapp', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
+    { key: 'telegram', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s.telegram_url, show: s.show_telegram },
+    { key: 'instagram', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s.instagram_url, show: s.show_instagram },
+    { key: 'tiktok', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
+  ].filter(x => x.show && x.url);
+
   f.className = 'border-t border-white/5 py-8 mt-12 bg-black/20';
-  f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+  f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-gray-500">
     <div class="flex items-center gap-2 font-bold text-gray-400">
-      <i class="fa-solid fa-cube text-blue-500"></i> منصة التعليم
+      <i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}
     </div>
+    
+    ${socials.length ? `
+      <div class="flex gap-4 text-xl">
+        ${socials.map(x => `<a href="${x.url}" target="_blank" class="text-gray-400 ${x.color} transition"><i class="fa-brands ${x.icon}"></i></a>`).join('')}
+      </div>
+    ` : ''}
+
     <div class="flex gap-4 font-bold text-xs">
       <a href="#/policy/terms" class="hover:text-white transition">شروط الاستخدام</a>
       <a href="#/policy/privacy" class="hover:text-white transition">سياسة الخصوصية</a>

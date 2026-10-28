@@ -1,0 +1,9 @@
+.watermark-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:10}
+.watermark-item{position:absolute;font-size:14px;color:rgba(0,0,0,.08);white-space:nowrap;user-select:none;animation:float 20s linear infinite}
+.dark .watermark-item{color:rgba(255,255,255,.06)}
+@keyframes float{0%{transform:translate(0,0) rotate(-25deg)}25%{transform:translate(30vw,20vh) rotate(-25deg)}50%{transform:translate(60vw,40vh) rotate(-25deg)}75%{transform:translate(30vw,70vh) rotate(-25deg)}100%{transform:translate(0,0) rotate(-25deg)}}
+.transition-fade{animation:fadeIn .25s ease-in-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.no-select{user-select:none;-webkit-user-select:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:4px}

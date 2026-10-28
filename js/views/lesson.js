@@ -9,13 +9,9 @@ export default async function lessonView(el, params) {
   
   const p = store.profile;
   if (p.role === 'student') {
-    // تسجيل إن الطالب دخل وشاهد المحاضرة
     const { data: prog } = await supabase.from('student_progress').select('id').eq('student_id', p.id).eq('lecture_id', lectureId).single();
-    if (!prog) {
-      await supabase.from('student_progress').insert({ student_id: p.id, lecture_id: lectureId, video_watched: true });
-    } else {
-      await supabase.from('student_progress').update({ video_watched: true, updated_at: new Date() }).eq('id', prog.id);
-    }
+    if (!prog) await supabase.from('student_progress').insert({ student_id: p.id, lecture_id: lectureId, video_watched: true });
+    else await supabase.from('student_progress').update({ video_watched: true, updated_at: new Date() }).eq('id', prog.id);
   }
 
   el.innerHTML = `
@@ -42,6 +38,34 @@ export default async function lessonView(el, params) {
                     <i class="fa-solid fa-file-pdf text-red-400 text-xl"></i>
                     <span class="font-bold text-sm">${escapeHtml(pdf.title)}</span>
                   </a>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${(lecture.essay_exams||[]).length ? `
+            <div>
+              <h3 class="text-xl font-bold mb-4"><i class="fa-solid fa-pen-to-square text-orange-400 ml-2"></i> الواجبات</h3>
+              <div class="space-y-3">
+                ${(lecture.essay_exams||[]).map(ex => `
+                  <div class="flex items-center justify-between p-4 rounded-xl bg-orange-500/5 border border-orange-500/10">
+                    <span class="font-bold">${escapeHtml(ex.title)}</span>
+                    <a href="#/assignment/${lecture.id}/${ex.id}" class="btn-accent text-sm px-4 py-1.5">فتح الواجب</a>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${(lecture.mcq_exams||[]).length ? `
+            <div>
+              <h3 class="text-xl font-bold mb-4"><i class="fa-solid fa-list-check text-purple-400 ml-2"></i> الامتحانات</h3>
+              <div class="space-y-3">
+                ${(lecture.mcq_exams||[]).map(ex => `
+                  <div class="flex items-center justify-between p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                    <span class="font-bold">${escapeHtml(ex.title)}</span>
+                    <a href="#/exam/${lecture.id}/${ex.id}" class="btn-primary text-sm px-4 py-1.5">ابدأ الامتحان</a>
+                  </div>
                 `).join('')}
               </div>
             </div>

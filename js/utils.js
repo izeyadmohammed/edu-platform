@@ -5,12 +5,16 @@ export function formatMoney(n){return Number(n||0).toLocaleString('ar-EG')+' ج.
 export async function compressImage(file,maxW=1000,quality=.75){
   return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const sc=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',quality));};img.onerror=rej;img.src=e.target.result;};r.onerror=rej;r.readAsDataURL(file);});
 }
+
+// تعديل العلامة المائية لتكون مرة واحدة وواضحة
 export function watermark(el,text){
   if(!el)return; el.style.position='relative';
   const layer=document.createElement('div'); layer.className='watermark-layer';
-  for(let i=0;i<8;i++){const s=document.createElement('span');s.className='watermark-item';s.textContent=text;s.style.top=`${Math.random()*90}%`;s.style.left=`${Math.random()*90}%`;s.style.animationDelay=`${Math.random()*5}s`;layer.appendChild(s);}
+  const s=document.createElement('span'); s.className='watermark-item'; s.textContent=text;
+  layer.appendChild(s);
   el.appendChild(layer);
 }
+
 export function lockExamPage(){
   document.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('copy',e=>e.preventDefault());

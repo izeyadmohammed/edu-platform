@@ -1,4 +1,13 @@
-import { store } from './config.js';
+import { store, supabase } from './config.js';
+
+// دالة لجلب الإعدادات
+async function getSettings() {
+  const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
+  if (data) {
+    store.settings = data;
+    document.getElementById('page-title').textContent = data.platform_name;
+  }
+}
 
 export function toast(msg, type = 'info') {
   const colors = { info: 'bg-blue-600', success: 'bg-green-500', error: 'bg-red-500', warn: 'bg-yellow-500' };
@@ -28,16 +37,23 @@ export function modal({ title = '', body = '', actions = '' }) {
   return { close, root: wrap };
 }
 
-export function renderHeader() {
+export async function renderHeader() {
   const h = document.getElementById('app-header');
   if (!h) return;
+  
+  // جلب الإعدادات لو مش محملة
+  if (!store.settings) await getSettings();
+  
   const p = store.profile;
   const unread = (store.notifications || []).filter(n => !n.read).length;
-  
+  const platformName = store.settings?.platform_name || 'منصة التعليم';
+  const logoUrl = store.settings?.logo_url;
+
   h.className = 'glass-header sticky top-0 z-[800]';
   h.innerHTML = `<div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
     <a href="#/home" class="flex items-center gap-3 text-2xl font-black text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">
-      <i class="fa-solid fa-cube text-blue-500"></i><span>منصة التعليم</span>
+      ${logoUrl ? `<img src="${logoUrl}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
+      <span>${platformName}</span>
     </a>
     
     <nav class="hidden md:flex items-center gap-6 text-sm font-bold text-gray-300">
@@ -65,7 +81,6 @@ export function renderHeader() {
   
   const lo = h.querySelector('#logout-btn');
   if (lo) lo.onclick = async () => {
-    const { supabase } = await import('./config.js');
     await supabase.auth.signOut();
     location.hash = '#/home';
     location.reload();
@@ -78,14 +93,14 @@ export function renderFooter() {
   f.className = 'border-t border-white/5 py-8 mt-12 bg-black/20';
   f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
     <div class="flex items-center gap-2 font-bold text-gray-400">
-      <i class="fa-solid fa-cube text-blue-500"></i> منصة التعليم الذكي
+      <i class="fa-solid fa-cube text-blue-500"></i> منصة التعليم
+    </div>
+    <div class="flex gap-4 font-bold text-xs">
+      <a href="#" class="hover:text-white transition">شروط الاستخدام</a>
+      <a href="#" class="hover:text-white transition">سياسة الخصوصية</a>
+      <a href="#" class="hover:text-white transition">سياسة الاسترجاع</a>
     </div>
     <p>&copy; ${new Date().getFullYear()} جميع الحقوق محفوظة</p>
-    <div class="flex gap-4 text-lg">
-      <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-facebook"></i></a>
-      <a href="#" class="hover:text-pink-500 transition"><i class="fa-brands fa-instagram"></i></a>
-      <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-twitter"></i></a>
-    </div>
   </div>`;
 }
 

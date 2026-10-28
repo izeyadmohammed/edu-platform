@@ -1,7 +1,6 @@
-import { supabase, store, refreshCourses } from '../config.js';
-import { escapeHtml, uid, formatMoney, formatDate } from '../utils.js';
+import { supabase, store } from '../config.js';
+import { escapeHtml, uid, formatMoney } from '../utils.js';
 import { toast, modal } from '../ui.js';
-import { SUPABASE_URL } from '../config.js';
 
 export default async function adminView(el) {
   if (store.profile?.role !== 'super_admin') {
@@ -70,7 +69,6 @@ export default async function adminView(el) {
       </div>
     </div>`;
 
-  // شحن يدوي
   el.querySelectorAll('[data-charge]').forEach(b => {
     b.onclick = () => {
       const m = modal({
@@ -90,7 +88,6 @@ export default async function adminView(el) {
     };
   });
 
-  // حظر / فك حظر
   el.querySelectorAll('[data-block]').forEach(b => {
     b.onclick = async () => {
       const blk = b.dataset.blk === 'true';
@@ -99,7 +96,6 @@ export default async function adminView(el) {
     };
   });
 
-  // حذف مستخدم
   el.querySelectorAll('[data-delu]').forEach(b => {
     b.onclick = async () => {
       if (!confirm('حذف المستخدم نهائياً؟')) return;
@@ -109,7 +105,7 @@ export default async function adminView(el) {
     };
   });
 
-  // إضافة مدرس (بدون توكن)
+  // إضافة مدرس (أوتوماتيك)
   el.querySelector('#add-teacher').onclick = () => {
     const m = modal({
       title: 'إضافة مدرس',
@@ -130,7 +126,8 @@ export default async function adminView(el) {
         password: m.root.querySelector('#tpw').value || '123456'
       };
       try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/create_teacher`, {
+        // الرابط المباشر للدالة بدون أي توكنات
+        const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/create_teacher`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
@@ -143,7 +140,6 @@ export default async function adminView(el) {
     };
   };
 
-  // توليد أكواد
   el.querySelector('#gen-codes').onclick = () => {
     const m = modal({
       title: 'توليد أكواد شحن',

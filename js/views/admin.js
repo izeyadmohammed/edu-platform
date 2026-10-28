@@ -1,7 +1,7 @@
 import { supabase, store, refreshCourses } from '../config.js';
 import { escapeHtml, uid, formatMoney, formatDate } from '../utils.js';
 import { toast, modal } from '../ui.js';
-import { SUPABASE_URL, SUPABASE_KEY } from '../config.js';
+import { SUPABASE_URL } from '../config.js';
 
 export default async function adminView(el) {
   if (store.profile?.role !== 'super_admin') {
@@ -109,7 +109,7 @@ export default async function adminView(el) {
     };
   });
 
-  // إضافة مدرس عبر Edge Function
+  // إضافة مدرس (بدون توكن)
   el.querySelector('#add-teacher').onclick = () => {
     const m = modal({
       title: 'إضافة مدرس',
@@ -123,8 +123,6 @@ export default async function adminView(el) {
       actions: `<button id="tb" class="px-4 py-2 bg-blue-600 text-white rounded font-bold">إضافة</button>`
     });
     m.root.querySelector('#tb').onclick = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast('انتهت الجلسة', 'error'); return; }
       const body = {
         phone: m.root.querySelector('#tp').value,
         name: m.root.querySelector('#tn').value,
@@ -134,15 +132,11 @@ export default async function adminView(el) {
       try {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/create_teacher`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': SUPABASE_KEY
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
         const out = await res.json();
-        if (!res.ok) throw new Error(out.error || 'فشل');
+        if (!res.ok) throw new Error(out.error || 'فشل الاتصال');
         toast('تم إنشاء المدرس. كلمة المرور: ' + out.default_password, 'success');
         m.close(); location.reload();
       } catch (e) { toast(e.message, 'error'); }

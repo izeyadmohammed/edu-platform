@@ -75,6 +75,73 @@ export default async function adminView(el) {
       </div>
     </div>`;
 
+  // --- إعدادات المنصة (تم إصلاحها) ---
+  el.querySelector('#settings-btn').onclick = () => {
+    const s = settings || {};
+    const m = modal({
+      title: 'إعدادات المنصة',
+      body: `
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          <h4 class="font-bold text-blue-400 mb-2">الهوية البصرية</h4>
+          <div>
+            <label class="block text-sm font-bold mb-1">اسم المنصة</label>
+            <input id="platform-name" value="${escapeHtml(s.platform_name || '')}" class="input-field">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">لوجو المنصة</label>
+            <div class="flex items-center gap-3">
+              <div id="logo-prev" class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden border border-white/10">
+                ${s.logo_url ? `<img src="${s.logo_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cube text-gray-600"></i>`}
+              </div>
+              <input type="file" id="logo-upload" accept="image/*" class="text-sm w-full file:bg-blue-500/10 file:text-blue-400 file:border-0 file:rounded-lg file:px-3 file:py-1">
+            </div>
+          </div>
+
+          <h4 class="font-bold text-green-400 mt-6 mb-2">روابط التواصل الاجتماعي</h4>
+          ${socialInput('facebook', 'فيسبوك', s.facebook_url, s.show_facebook)}
+          ${socialInput('whatsapp', 'واتساب', s.whatsapp_url, s.show_whatsapp)}
+          ${socialInput('telegram', 'تيلجرام', s.telegram_url, s.show_telegram)}
+          ${socialInput('instagram', 'إنستجرام', s.instagram_url, s.show_instagram)}
+          ${socialInput('tiktok', 'تيك توك', s.tiktok_url, s.show_tiktok)}
+        </div>`,
+      actions: `<button id="save-settings" class="btn-primary w-full">حفظ جميع الإعدادات</button>`
+    });
+
+    let newLogoUrl = s.logo_url || '';
+    m.root.querySelector('#logo-upload').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      toast('جاري رفع الصورة...', 'info');
+      const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
+      const { error } = await supabase.storage.from('images').upload(fileName, file);
+      if (error) { toast('فشل الرفع', 'error'); return; }
+      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+      newLogoUrl = data.publicUrl;
+      m.root.querySelector('#logo-prev').innerHTML = `<img src="${newLogoUrl}" class="w-full h-full object-cover">`;
+      toast('تم', 'success');
+    };
+
+    m.root.querySelector('#save-settings').onclick = async () => {
+      const updates = {
+        platform_name: m.root.querySelector('#platform-name').value,
+        logo_url: newLogoUrl,
+        facebook_url: m.root.querySelector('#url-facebook').value,
+        whatsapp_url: m.root.querySelector('#url-whatsapp').value,
+        telegram_url: m.root.querySelector('#url-telegram').value,
+        instagram_url: m.root.querySelector('#url-instagram').value,
+        tiktok_url: m.root.querySelector('#url-tiktok').value,
+        show_facebook: m.root.querySelector('#show-facebook').checked,
+        show_whatsapp: m.root.querySelector('#show-whatsapp').checked,
+        show_telegram: m.root.querySelector('#show-telegram').checked,
+        show_instagram: m.root.querySelector('#show-instagram').checked,
+        show_tiktok: m.root.querySelector('#show-tiktok').checked,
+      };
+      const { error } = await supabase.from('settings').update(updates).eq('id', 1);
+      if (error) { toast(error.message, 'error'); return; }
+      toast('تم حفظ الإعدادات', 'success'); m.close(); location.reload();
+    };
+  };
+
   el.querySelector('#gen-codes').onclick = () => {
     const m = modal({
       title: 'توليد أكواد شحن',
@@ -91,8 +158,19 @@ export default async function adminView(el) {
       if (error) toast(error.message, 'error'); else { toast('تم', 'success'); m.close(); location.reload(); }
     };
   };
-  
-  // ... (باقي أزرار إعدادات المنصة)
+}
+
+function socialInput(key, label, val, show) {
+  return `<div class="p-3 rounded-lg bg-black/20 border border-white/5 mb-2">
+    <div class="flex justify-between items-center mb-2">
+      <span class="font-bold text-sm">${label}</span>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="show-${key}" class="sr-only peer" ${show ? 'checked' : ''}>
+        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+      </label>
+    </div>
+    <input id="url-${key}" value="${escapeHtml(val || '')}" placeholder="https://..." class="input-field text-xs">
+  </div>`;
 }
 
 function statCard(icon, label, val, colorClass) {

@@ -11,6 +11,24 @@ export default async function teacherView(el) {
   const myCourses = store.courses.filter(c => c.teacher_id === p.id || p.role === 'super_admin');
   const myLectures = store.lectures.filter(l => l.teacher_id === p.id || p.role === 'super_admin');
   
+  // جلب إحصائيات الطلاب اللي مشتركين في كورساتي
+  let myStudentsStats = [];
+  if (myCourses.length > 0) {
+    const courseIds = myCourses.map(c => c.id);
+    const { data: students } = await supabase.from('profiles')
+      .select('id, name, phone, enrolled_courses')
+      .eq('role', 'student')
+      .overlaps('enrolled_courses', courseIds);
+    
+    if (students) {
+      for (const s of students) {
+        const { count: vids } = await supabase.from('student_progress').select('*', { count: 'exact', head: true }).eq('student_id', s.id).eq('video_watched', true);
+        const { count: exms } = await supabase.from('exam_submissions').select('*', { count: 'exact', head: true }).eq('student_id', s.id).eq('type', 'mcq');
+        myStudentsStats.push({ ...s, videos: vids || 0, exams: exms || 0 });
+      }
+    }
+  }
+
   el.innerHTML = `
     <h1 class="text-3xl font-black mb-6 animate-fade-up">لوحة <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">المدرس</span></h1>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -59,6 +77,24 @@ export default async function teacherView(el) {
         </div>
       </div>
 
+      <div class="glass-card p-6 lg:col-span-2 animate-fade-up" style="animation-delay: 0.2s;">
+        <h3 class="font-bold text-lg mb-4">إحصائيات طلابي (${myStudentsStats.length})</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          ${myStudentsStats.map(s => `
+            <div class="p-3 rounded-lg bg-white/5 border border-white/5">
+              <div class="flex justify-between items-center mb-2">
+                <p class="font-bold text-sm">${escapeHtml(s.name)}</p>
+                <span class="text-xs text-gray-500">${escapeHtml(s.phone || '')}</span>
+              </div>
+              <div class="flex gap-3 text-xs">
+                <span class="text-blue-400 font-bold"><i class="fa-solid fa-video"></i> ${s.videos} فيديو</span>
+                <span class="text-purple-400 font-bold"><i class="fa-solid fa-list-check"></i> ${s.exams} امتحان</span>
+              </div>
+            </div>
+          `).join('') || '<p class="text-gray-500 text-sm col-span-3">لا يوجد طلاب مشتركين حتى الآن</p>'}
+        </div>
+      </div>
+
     </div>`;
 
   // إضافة كورس
@@ -97,7 +133,6 @@ export default async function teacherView(el) {
     };
   });
 
-  // إضافة محاضرة
   el.querySelectorAll('[data-add-lect]').forEach(b => {
     b.onclick = () => {
       const m = modal({
@@ -118,7 +153,6 @@ export default async function teacherView(el) {
     };
   });
 
-  // حذف محاضرة
   el.querySelectorAll('[data-del-lect]').forEach(b => {
     b.onclick = async () => {
       if (!confirm('حذف المحاضرة؟')) return;
@@ -127,14 +161,12 @@ export default async function teacherView(el) {
     };
   });
 
-  // تعديل محتوى المحاضرة
   el.querySelectorAll('[data-edit-lect]').forEach(b => {
     b.onclick = () => {
       const lect = store.lectures.find(x => x.id === b.dataset.editLect);
       if (lect) openLectureEditor(lect);
     };
   });
-
 }
 
 function statCard(icon, label, val, colorClass) {

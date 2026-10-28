@@ -45,6 +45,7 @@ export async function renderHeader() {
   const unread = (store.notifications || []).filter(n => !n.read).length;
   const platformName = store.settings?.platform_name || 'منصة التعليم';
   const logoUrl = store.settings?.logo_url;
+  const supportNum = store.settings?.support_whatsapp;
 
   h.className = 'glass-header sticky top-0 z-[800]';
   h.innerHTML = `<div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -63,6 +64,12 @@ export async function renderHeader() {
     </nav>
 
     <div class="flex items-center gap-3">
+      ${supportNum ? `
+        <a href="https://wa.me/${supportNum}" target="_blank" class="px-4 py-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 text-sm font-bold transition flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-lg"></i> الدعم
+        </a>
+      ` : ''}
+
       ${p ? `
         <a href="#/notifications" class="relative w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition">
           <i class="fa-regular fa-bell text-gray-300"></i>

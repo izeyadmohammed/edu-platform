@@ -75,7 +75,7 @@ export default async function adminView(el) {
       </div>
     </div>`;
 
-  // --- إعدادات المنصة (تم إصلاحها) ---
+  // --- إعدادات المنصة ---
   el.querySelector('#settings-btn').onclick = () => {
     const s = settings || {};
     const m = modal({
@@ -97,7 +97,13 @@ export default async function adminView(el) {
             </div>
           </div>
 
-          <h4 class="font-bold text-green-400 mt-6 mb-2">روابط التواصل الاجتماعي</h4>
+          <h4 class="font-bold text-green-400 mt-6 mb-2">الدعم الفني</h4>
+          <div>
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للدعم (بكود الدولة بدون +)</label>
+            <input id="support-whatsapp" value="${escapeHtml(s.support_whatsapp || '')}" placeholder="مثال: 201126346329" class="input-field" dir="ltr">
+          </div>
+
+          <h4 class="font-bold text-blue-400 mt-6 mb-2">روابط التواصل الاجتماعي</h4>
           ${socialInput('facebook', 'فيسبوك', s.facebook_url, s.show_facebook)}
           ${socialInput('whatsapp', 'واتساب', s.whatsapp_url, s.show_whatsapp)}
           ${socialInput('telegram', 'تيلجرام', s.telegram_url, s.show_telegram)}
@@ -125,6 +131,7 @@ export default async function adminView(el) {
       const updates = {
         platform_name: m.root.querySelector('#platform-name').value,
         logo_url: newLogoUrl,
+        support_whatsapp: m.root.querySelector('#support-whatsapp').value,
         facebook_url: m.root.querySelector('#url-facebook').value,
         whatsapp_url: m.root.querySelector('#url-whatsapp').value,
         telegram_url: m.root.querySelector('#url-telegram').value,

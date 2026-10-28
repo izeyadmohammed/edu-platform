@@ -28,7 +28,6 @@ export default async function adminView(el) {
     </div>
 
     <div class="grid grid-cols-1 gap-6 animate-fade-up">
-      <!-- جدول إحصائيات الطلاب -->
       <div class="glass-card p-6 overflow-x-auto">
         <h3 class="font-bold text-lg mb-4">إحصائيات الطلاب التفصيلية</h3>
         <table class="w-full text-right text-sm">
@@ -60,7 +59,6 @@ export default async function adminView(el) {
         </table>
       </div>
 
-      <!-- أكواد الشحن -->
       <div class="glass-card p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-lg">أكواد الشحن</h3>
@@ -77,5 +75,34 @@ export default async function adminView(el) {
       </div>
     </div>`;
 
-  // ... باقي أزرار الإعدادات والأكواد (نفس الكود القديم)
+  el.querySelector('#gen-codes').onclick = () => {
+    const m = modal({
+      title: 'توليد أكواد شحن',
+      body: `<input id="gc-amt" type="number" placeholder="قيمة كل كود" class="input-field mb-2"><input id="gc-cnt" type="number" placeholder="العدد" value="5" class="input-field">`,
+      actions: `<button id="gcb" class="btn-primary">توليد</button>`
+    });
+    m.root.querySelector('#gcb').onclick = async () => {
+      const amt = +m.root.querySelector('#gc-amt').value;
+      const cnt = +m.root.querySelector('#gc-cnt').value || 1;
+      if (!amt) return;
+      const rows = [];
+      for (let i = 0; i < cnt; i++) rows.push({ id: uid(), code: 'EDU-' + Math.random().toString(36).slice(2, 10).toUpperCase(), amount: amt });
+      const { error } = await supabase.from('codes').insert(rows);
+      if (error) toast(error.message, 'error'); else { toast('تم', 'success'); m.close(); location.reload(); }
+    };
+  };
+  
+  // ... (باقي أزرار إعدادات المنصة)
+}
+
+function statCard(icon, label, val, colorClass) {
+  return `<div class="glass-card p-5 flex items-center gap-4">
+    <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center">
+      <i class="fa-solid ${icon} text-2xl ${colorClass}"></i>
+    </div>
+    <div>
+      <p class="text-2xl font-black">${val}</p>
+      <p class="text-xs font-bold text-gray-400">${label}</p>
+    </div>
+  </div>`;
 }

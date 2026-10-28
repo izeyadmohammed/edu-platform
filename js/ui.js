@@ -96,9 +96,9 @@ export function renderFooter() {
       <i class="fa-solid fa-cube text-blue-500"></i> منصة التعليم
     </div>
     <div class="flex gap-4 font-bold text-xs">
-      <a href="#" class="hover:text-white transition">شروط الاستخدام</a>
-      <a href="#" class="hover:text-white transition">سياسة الخصوصية</a>
-      <a href="#" class="hover:text-white transition">سياسة الاسترجاع</a>
+      <a href="#/policy/terms" class="hover:text-white transition">شروط الاستخدام</a>
+      <a href="#/policy/privacy" class="hover:text-white transition">سياسة الخصوصية</a>
+      <a href="#/policy/refund" class="hover:text-white transition">سياسة الاسترجاع</a>
     </div>
     <p>&copy; ${new Date().getFullYear()} جميع الحقوق محفوظة</p>
   </div>`;

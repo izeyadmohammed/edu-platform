@@ -6,7 +6,7 @@ import { openLectureEditor } from './lesson.js';
 export default async function teacherView(el) {
   const p = store.profile;
   if (!p || (p.role !== 'teacher' && p.role !== 'super_admin')) {
-    el.innerHTML = `<p class="text-center py-10 text-red-600">غير مصرح</p>`; return;
+    el.innerHTML = `<p class="text-center py-10 text-red-400">غير مصرح</p>`; return;
   }
   const myCourses = store.courses.filter(c => c.teacher_id === p.id || p.role === 'super_admin');
   const myLectures = store.lectures.filter(l => l.teacher_id === p.id || p.role === 'super_admin');
@@ -17,69 +17,111 @@ export default async function teacherView(el) {
     .order('submitted_at', { ascending: false });
 
   el.innerHTML = `
-    <h1 class="text-2xl font-extrabold mb-5">لوحة المدرس</h1>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-bold">كورساتي (${myCourses.length})</h3>
-          <button id="add-course" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">+ كورس</button>
+    <h1 class="text-3xl font-black mb-6 animate-fade-up">لوحة <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">المدرس</span></h1>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card p-6 animate-fade-up">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">كورساتي (${myCourses.length})</h3>
+          <button id="add-course" class="btn-primary text-sm px-4 py-2">+ كورس</button>
         </div>
-        <div class="space-y-2">
+        <div class="space-y-3">
           ${myCourses.map(c => `
-            <div class="flex justify-between items-center p-2 border-b border-gray-100 dark:border-slate-700">
-              <div>
-                <p class="font-bold">${escapeHtml(c.title)}</p>
-                <p class="text-xs text-gray-500">${escapeHtml(c.grade)} - ${formatMoney(c.price)}</p>
+            <div class="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
+              <div class="flex items-center gap-3">
+                ${c.image ? `<img src="${c.image}" class="w-10 h-10 rounded object-cover">` : `<div class="w-10 h-10 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-book"></i></div>`}
+                <div>
+                  <p class="font-bold text-sm">${escapeHtml(c.title)}</p>
+                  <p class="text-xs text-gray-400">${escapeHtml(c.grade)} - ${formatMoney(c.price)}</p>
+                </div>
               </div>
-              <div class="flex gap-1">
-                <button data-add-lect="${c.id}" class="px-2 py-1 bg-green-600 text-white rounded text-xs">+ محاضرة</button>
-                <button data-del-course="${c.id}" class="px-2 py-1 bg-red-600 text-white rounded text-xs">حذف</button>
+              <div class="flex gap-2">
+                <button data-add-lect="${c.id}" class="px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold hover:bg-green-500/30">+ محاضرة</button>
+                <button data-del-course="${c.id}" class="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold hover:bg-red-500/30">حذف</button>
               </div>
-            </div>`).join('') || '<p class="text-gray-500 text-sm">لا توجد كورسات</p>'}
+            </div>
+          `).join('') || '<p class="text-gray-500 text-sm">لا توجد كورسات</p>'}
         </div>
       </div>
-      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow">
-        <h3 class="font-bold mb-3">محاضراتي (${myLectures.length})</h3>
-        <div class="space-y-2 max-h-96 overflow-y-auto">
+
+      <div class="glass-card p-6 animate-fade-up" style="animation-delay: 0.1s;">
+        <h3 class="font-bold text-lg mb-4">محاضراتي (${myLectures.length})</h3>
+        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
           ${myLectures.map(l => {
             const c = store.courses.find(x => x.id === l.course_id);
-            return `<div class="flex justify-between items-center p-2 border-b border-gray-100 dark:border-slate-700">
-              <div><p class="font-bold text-sm">${escapeHtml(l.title)}</p><p class="text-xs text-gray-500">${escapeHtml(c?.title||'-')}</p></div>
-              <div class="flex gap-1">
-                <button data-edit-lect="${l.id}" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs">تعديل</button>
-                <button data-del-lect="${l.id}" class="px-2 py-1 bg-red-600 text-white rounded text-xs">حذف</button>
-              </div></div>`;
+            return `
+              <div class="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
+                <div>
+                  <p class="font-bold text-sm">${escapeHtml(l.title)}</p>
+                  <p class="text-xs text-gray-400">${escapeHtml(c?.title||'-')}</p>
+                </div>
+                <div class="flex gap-2">
+                  <button data-edit-lect="${l.id}" class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-bold">تعديل</button>
+                  <button data-del-lect="${l.id}" class="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold">حذف</button>
+                </div>
+              </div>`;
           }).join('') || '<p class="text-gray-500 text-sm">لا توجد محاضرات</p>'}
         </div>
       </div>
-      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow lg:col-span-2">
-        <h3 class="font-bold mb-3">واجبات للتصحيح (${subs?.length || 0})</h3>
-        <div class="space-y-2">
+
+      <div class="glass-card p-6 lg:col-span-2 animate-fade-up" style="animation-delay: 0.2s;">
+        <h3 class="font-bold text-lg mb-4">واجبات للتصحيح (${subs?.length || 0})</h3>
+        <div class="space-y-3">
           ${(subs||[]).map(s => `
-            <div class="border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <div class="p-4 rounded-lg bg-white/5 border border-white/5">
               <div class="flex justify-between items-start mb-2">
-                <div><p class="font-bold">${escapeHtml(s.student_name)}</p><p class="text-xs text-gray-500">${formatDate(s.submitted_at)} • ${escapeHtml(s.status)}</p></div>
-                ${s.status === 'جاري التصحيح' ? `<button data-grade="${s.id}" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">تصحيح</button>` : `<span class="text-green-600 font-bold">${s.grade ?? ''}</span>`}
+                <div>
+                  <p class="font-bold">${escapeHtml(s.student_name)}</p>
+                  <p class="text-xs text-gray-400">${formatDate(s.submitted_at)} • ${escapeHtml(s.status)}</p>
+                </div>
+                ${s.status === 'جاري التصحيح' 
+                  ? `<button data-grade="${s.id}" class="btn-primary text-xs px-3 py-1">تصحيح</button>` 
+                  : `<span class="text-green-400 font-bold text-sm">${s.grade ?? ''}</span>`}
               </div>
-              <p class="bg-gray-50 dark:bg-slate-900 p-2 rounded text-sm whitespace-pre-wrap">${escapeHtml(s.answer||'')}</p>
-              ${s.teacher_note?`<p class="text-xs text-blue-600 mt-1">ملاحظتك: ${escapeHtml(s.teacher_note)}</p>`:''}
-            </div>`).join('') || '<p class="text-gray-500 text-sm">لا توجد واجبات</p>'}
+              <p class="bg-black/30 p-3 rounded text-sm whitespace-pre-wrap">${escapeHtml(s.answer||'')}</p>
+            </div>
+          `).join('') || '<p class="text-gray-500 text-sm">لا توجد واجبات</p>'}
         </div>
       </div>
     </div>`;
 
+  // --- إضافة كورس مع صورة ---
   el.querySelector('#add-course').onclick = () => {
     const m = modal({
-      title: 'إضافة كورس', body: `
-        <div class="space-y-2">
-          <input id="t" placeholder="العنوان" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700">
-          <input id="g" placeholder="الصف" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700">
-          <input id="pr" type="number" placeholder="السعر" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700">
-          <textarea id="d" placeholder="الوصف" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700"></textarea>
-          <input id="im" placeholder="رابط الصورة (اختياري)" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700">
+      title: 'إضافة كورس جديد', 
+      body: `
+        <div class="space-y-3">
+          <input id="t" placeholder="عنوان الكورس" class="input-field">
+          <input id="g" placeholder="الصف" class="input-field">
+          <input id="pr" type="number" placeholder="السعر" class="input-field">
+          <textarea id="d" placeholder="وصف الكورس" class="input-field"></textarea>
+          
+          <div>
+            <label class="block text-sm font-bold mb-2">صورة الكورس (اختياري)</label>
+            <div class="flex items-center gap-4">
+              <div id="course-img-preview" class="w-16 h-16 rounded-xl bg-gray-800 flex items-center justify-center overflow-hidden border border-white/10">
+                <i class="fa-solid fa-image text-gray-600"></i>
+              </div>
+              <input type="file" id="course-img" accept="image/*" class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-500/10 file:text-blue-400 hover:file:bg-blue-500/20">
+            </div>
+          </div>
         </div>`,
-      actions: `<button id="sb" class="px-4 py-2 bg-blue-600 text-white rounded font-bold">إضافة</button>`
+      actions: `<button id="sb" class="btn-primary">إضافة الكورس</button>`
     });
+
+    let imgUrl = '';
+    m.root.querySelector('#course-img').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      toast('جاري رفع الصورة...', 'info');
+      const fileName = `course_${Date.now()}.${file.name.split('.').pop()}`;
+      const { error } = await supabase.storage.from('images').upload(fileName, file);
+      if (error) { toast('فشل رفع الصورة', 'error'); return; }
+      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+      imgUrl = data.publicUrl;
+      m.root.querySelector('#course-img-preview').innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover">`;
+      toast('تم رفع الصورة', 'success');
+    };
+
     m.root.querySelector('#sb').onclick = async () => {
       try {
         const { error } = await supabase.from('courses').insert({
@@ -88,7 +130,7 @@ export default async function teacherView(el) {
           grade: m.root.querySelector('#g').value,
           price: +m.root.querySelector('#pr').value || 0,
           description: m.root.querySelector('#d').value,
-          image: m.root.querySelector('#im').value
+          image: imgUrl
         });
         if (error) throw new Error(error.message);
         toast('تمت الإضافة', 'success'); m.close(); await refreshCourses(); location.reload();
@@ -108,8 +150,8 @@ export default async function teacherView(el) {
     b.onclick = () => {
       const m = modal({
         title: 'إضافة محاضرة',
-        body: `<input id="lt" placeholder="عنوان المحاضرة" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700">`,
-        actions: `<button id="lsb" class="px-4 py-2 bg-green-600 text-white rounded font-bold">إضافة</button>`
+        body: `<input id="lt" placeholder="عنوان المحاضرة" class="input-field">`,
+        actions: `<button id="lsb" class="btn-accent">إضافة</button>`
       });
       m.root.querySelector('#lsb').onclick = async () => {
         try {
@@ -145,12 +187,12 @@ export default async function teacherView(el) {
       const m = modal({
         title: 'تصحيح الواجب',
         body: `
-          <p class="text-sm mb-2 bg-gray-50 dark:bg-slate-900 p-2 rounded whitespace-pre-wrap">${escapeHtml(s.answer||'')}</p>
-          <label class="text-sm">الدرجة</label>
-          <input id="gr" type="number" class="w-full px-3 py-2 border rounded mb-2 dark:bg-slate-900 dark:border-slate-700">
-          <label class="text-sm">ملاحظة</label>
-          <textarea id="nt" class="w-full px-3 py-2 border rounded dark:bg-slate-900 dark:border-slate-700"></textarea>`,
-        actions: `<button id="grs" class="px-4 py-2 bg-blue-600 text-white rounded font-bold">حفظ</button>`
+          <p class="text-sm mb-4 bg-black/30 p-3 rounded whitespace-pre-wrap">${escapeHtml(s.answer||'')}</p>
+          <label class="text-sm font-bold">الدرجة</label>
+          <input id="gr" type="number" class="input-field mb-3">
+          <label class="text-sm font-bold">ملاحظة</label>
+          <textarea id="nt" class="input-field"></textarea>`,
+        actions: `<button id="grs" class="btn-primary">حفظ</button>`
       });
       m.root.querySelector('#grs').onclick = async () => {
         const { error } = await supabase.from('exam_submissions').update({

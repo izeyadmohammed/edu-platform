@@ -107,3 +107,8 @@ body {
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+/* إخفاء أي عناصر علوية تخص يوتيوب */
+iframe#player-container-0, iframe[id^="player-container-"] {
+  pointer-events: auto;
+}

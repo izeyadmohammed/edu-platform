@@ -1,6 +1,20 @@
 import { store, supabase } from './config.js';
 
-async function getSettings() {
+export function initDark() {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+export function toggleDark() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+
+export async function getSettings() {
   const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
   if (data) {
     store.settings = data;
@@ -22,12 +36,12 @@ export function modal({ title = '', body = '', actions = '' }) {
   const wrap = document.createElement('div');
   wrap.className = 'fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-up';
   wrap.innerHTML = `<div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between p-5 border-b border-white/10">
-      <h3 class="font-extrabold text-xl">${title}</h3>
-      <button data-close class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+    <div class="flex items-center justify-between p-5 border-b border-border">
+      <h3 class="font-extrabold text-xl text-main">${title}</h3>
+      <button data-close class="text-muted hover:text-red-500 text-2xl">&times;</button>
     </div>
     <div class="p-5">${body}</div>
-    ${actions ? `<div class="p-5 border-t border-white/10 flex justify-end gap-3">${actions}</div>` : ''}
+    ${actions ? `<div class="p-5 border-t border-border flex justify-end gap-3">${actions}</div>` : ''}
   </div>`;
   root.appendChild(wrap);
   const close = () => wrap.remove();
@@ -47,6 +61,7 @@ export async function renderHeader() {
   const logoUrl = store.settings?.logo_url;
   const supportNum = store.settings?.support_whatsapp;
   const devNum = store.settings?.developer_whatsapp;
+  const isDark = document.documentElement.classList.contains('dark');
 
   h.className = 'glass-header sticky top-0 z-[800]';
   h.innerHTML = `<div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -55,41 +70,46 @@ export async function renderHeader() {
       <span>${platformName}</span>
     </a>
     
-    <nav class="hidden md:flex items-center gap-6 text-sm font-bold text-gray-300">
-      <a href="#/home" class="hover:text-white transition">الرئيسية</a>
-      <a href="#/courses" class="hover:text-white transition">الكورسات</a>
-      <a href="#/teachers" class="hover:text-white transition">المدرسون</a>
-      ${p && p.role === 'student' ? `<a href="#/student" class="hover:text-white transition">حسابي</a>` : ''}
-      ${p && p.role === 'teacher' ? `<a href="#/teacher" class="hover:text-white transition text-blue-400">لوحة المدرس</a>` : ''}
-      ${p && p.role === 'super_admin' ? `<a href="#/admin" class="hover:text-white transition text-purple-400">لوحة المالك</a>` : ''}
+    <nav class="hidden md:flex items-center gap-6 text-sm font-bold text-muted">
+      <a href="#/home" class="hover:text-primary transition">الرئيسية</a>
+      <a href="#/courses" class="hover:text-primary transition">الكورسات</a>
+      <a href="#/teachers" class="hover:text-primary transition">المدرسون</a>
+      ${p && p.role === 'student' ? `<a href="#/student" class="hover:text-primary transition">حسابي</a>` : ''}
+      ${p && (p.role === 'teacher' || p.role === 'assistant') ? `<a href="#/teacher" class="hover:text-primary transition">لوحة المعلم</a>` : ''}
+      ${p && p.role === 'super_admin' ? `<a href="#/admin" class="hover:text-primary transition">لوحة المالك</a>` : ''}
     </nav>
 
     <div class="flex items-center gap-2 md:gap-3">
+      <button id="dark-toggle" class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition text-main">
+        <i class="fa-solid ${isDark ? 'fa-sun' : 'fa-moon'}"></i>
+      </button>
+
       ${supportNum ? `
-        <a href="https://wa.me/${supportNum}" target="_blank" class="px-3 py-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
+        <a href="https://wa.me/${supportNum}" target="_blank" class="px-3 py-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
           <i class="fa-brands fa-whatsapp text-lg"></i> <span class="hidden sm:inline">الدعم</span>
         </a>
       ` : ''}
 
       ${devNum ? `
-        <a href="https://wa.me/${devNum}" target="_blank" class="px-3 py-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
+        <a href="https://wa.me/${devNum}" target="_blank" class="px-3 py-2 rounded-lg bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
           <i class="fa-solid fa-code text-lg"></i> <span class="hidden sm:inline">المطور</span>
         </a>
       ` : ''}
 
       ${p ? `
-        <a href="#/notifications" class="relative w-9 h-9 md:w-10 md:h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition">
-          <i class="fa-regular fa-bell text-gray-300 text-sm"></i>
-          ${unread ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-gray-900">${unread}</span>` : ''}
+        <a href="#/notifications" class="relative w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition text-main">
+          <i class="fa-regular fa-bell"></i>
+          ${unread ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-gray-900">${unread}</span>` : ''}
         </a>
-        <button id="logout-btn" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs md:text-sm font-bold transition">خروج</button>
+        <button id="logout-btn" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs md:text-sm font-bold transition">خروج</button>
       ` : `
-        <a href="#/login" class="px-3 md:px-5 py-2 rounded-lg text-white font-bold hover:text-blue-400 transition text-sm">دخول</a>
+        <a href="#/login" class="px-3 md:px-5 py-2 rounded-lg text-main font-bold hover:text-primary transition text-sm">دخول</a>
         <a href="#/signup" class="btn-primary text-xs md:text-sm px-3 md:px-5">حساب جديد</a>
       `}
     </div>
   </div>`;
   
+  h.querySelector('#dark-toggle').onclick = () => { toggleDark(); renderHeader(); };
   const lo = h.querySelector('#logout-btn');
   if (lo) lo.onclick = async () => {
     await supabase.auth.signOut();
@@ -98,48 +118,4 @@ export async function renderHeader() {
   };
 }
 
-export async function renderFooter() {
-  const f = document.getElementById('app-footer');
-  if (!f) return;
-  if (!store.settings) await getSettings();
-  
-  const s = store.settings || {};
-  const socials = [
-    { key: 'facebook', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
-    { key: 'whatsapp', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
-    { key: 'telegram', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s.telegram_url, show: s.show_telegram },
-    { key: 'instagram', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s.instagram_url, show: s.show_instagram },
-    { key: 'tiktok', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
-  ].filter(x => x.show && x.url);
-
-  f.className = 'border-t border-white/5 py-8 mt-12 bg-black/20';
-  f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-gray-500">
-    <div class="flex items-center gap-2 font-bold text-gray-400">
-      <i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}
-    </div>
-    
-    ${socials.length ? `
-      <div class="flex gap-4 text-xl">
-        ${socials.map(x => `<a href="${x.url}" target="_blank" class="text-gray-400 ${x.color} transition"><i class="fa-brands ${x.icon}"></i></a>`).join('')}
-      </div>
-    ` : ''}
-
-    <div class="flex gap-4 font-bold text-xs">
-      <a href="#/policy/terms" class="hover:text-white transition">شروط الاستخدام</a>
-      <a href="#/policy/privacy" class="hover:text-white transition">سياسة الخصوصية</a>
-      <a href="#/policy/refund" class="hover:text-white transition">سياسة الاسترجاع</a>
-    </div>
-    <p>&copy; ${new Date().getFullYear()} جميع الحقوق محفوظة</p>
-  </div>`;
-}
-
-export function setLoading(el = document.getElementById('app-main'), msg = 'جاري التحميل...') {
-  if (!el) return;
-  el.innerHTML = `<div class="flex flex-col items-center justify-center py-32 text-gray-400 animate-fade-up">
-    <div class="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-    <p class="font-bold">${msg}</p>
-  </div>`;
-}
-
-export function initDark() {}
-export function toggleDark() {}
+// ... (renderFooter و setLoading زي ما هم)

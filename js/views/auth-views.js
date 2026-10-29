@@ -6,12 +6,12 @@ export default async function authView(el) {
 }
 function renderLogin(el) {
   el.innerHTML = `<div class="glass-card max-w-md mx-auto p-8 mt-10 animate-fade-up">
-    <h2 class="text-2xl font-extrabold mb-6 text-center">تسجيل الدخول</h2>
+    <h2 class="text-2xl font-extrabold mb-6 text-center text-main">تسجيل الدخول</h2>
     <form id="login-form" class="space-y-4">
-      <div><label class="block text-sm font-bold mb-1">رقم الهاتف</label><input name="phone" required type="tel" placeholder="01xxxxxxxxx" class="input-field" dir="ltr"></div>
-      <div><label class="block text-sm font-bold mb-1">كلمة المرور</label><input name="password" required type="password" class="input-field" dir="ltr"></div>
+      <div><label class="block text-sm font-bold mb-1 text-muted">رقم الهاتف</label><input name="phone" required type="tel" placeholder="01xxxxxxxxx" class="input-field" dir="ltr"></div>
+      <div><label class="block text-sm font-bold mb-1 text-muted">كلمة المرور</label><input name="password" required type="password" class="input-field" dir="ltr"></div>
       <button class="btn-primary w-full py-3">دخول</button>
-      <div class="flex justify-between text-sm mt-4"><a href="#/signup" class="text-blue-400 hover:underline">حساب جديد</a><a href="#" id="forgot" class="text-red-400 hover:underline">نسيت كلمة المرور؟</a></div>
+      <div class="flex justify-between text-sm mt-4"><a href="#/signup" class="text-blue-500 hover:underline">حساب جديد</a><a href="#" id="forgot" class="text-red-500 hover:underline">نسيت كلمة المرور؟</a></div>
     </form></div>`;
   el.querySelector('#login-form').onsubmit = async (e) => {
     e.preventDefault();
@@ -25,13 +25,13 @@ function renderLogin(el) {
   };
   el.querySelector('#forgot').onclick = (e) => {
     e.preventDefault();
-    modal({ title: 'استعادة كلمة المرور', body: `<p class="mb-3">تواصل مع الدعم عبر واتساب:</p><a target="_blank" href="https://wa.me/201126346329" class="block text-center py-3 bg-green-500/20 text-green-400 rounded-lg font-bold border border-green-500/30"><i class="fa-brands fa-whatsapp"></i> فتح واتساب</a>` });
+    modal({ title: 'استعادة كلمة المرور', body: `<p class="mb-3 text-muted">تواصل مع الدعم عبر واتساب:</p><a target="_blank" href="https://wa.me/201126346329" class="block text-center py-3 bg-green-500/20 text-green-500 rounded-lg font-bold border border-green-500/30"><i class="fa-brands fa-whatsapp"></i> فتح واتساب</a>` });
   };
 }
 function renderSignup(el) {
   const grades = ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي', 'الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي'];
   el.innerHTML = `<div class="glass-card max-w-md mx-auto p-8 mt-10 animate-fade-up">
-    <h2 class="text-2xl font-extrabold mb-6 text-center">إنشاء حساب جديد</h2>
+    <h2 class="text-2xl font-extrabold mb-6 text-center text-main">إنشاء حساب جديد</h2>
     <form id="signup-form" class="space-y-3">
       <input name="name" required placeholder="الاسم الثلاثي" class="input-field">
       <input name="phone" required type="tel" placeholder="رقم الهاتف" class="input-field" dir="ltr">
@@ -42,7 +42,7 @@ function renderSignup(el) {
       </select>
       <input name="password" required type="password" minlength="8" placeholder="كلمة المرور (8 أحرف على الأقل)" class="input-field" dir="ltr">
       <button class="btn-primary w-full py-3 mt-2">تسجيل</button>
-      <a href="#/login" class="block text-center text-sm text-blue-400 hover:underline mt-3">لدي حساب بالفعل</a>
+      <a href="#/login" class="block text-center text-sm text-blue-500 hover:underline mt-3">لدي حساب بالفعل</a>
     </form></div>`;
   el.querySelector('#signup-form').onsubmit = async (e) => {
     e.preventDefault();

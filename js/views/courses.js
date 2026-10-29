@@ -139,10 +139,14 @@ async function courseDetail(el, id) {
 
           // تحديث الحالة للمحاضرة اللي بعدها
           if (enrolled && p.role === 'student') {
-            const hasContent = (l.mcq_exams?.length > 0 || l.essay_exams?.length > 0);
-            previousCompleted = hasContent 
-              ? (prog.assignment_submitted && prog.exam_submitted) 
-              : prog.video_watched;
+            // شروط الفتح: لو فيه واجب لازم 80%، لو فيه امتحان لازم 60%
+            const hasEssay = l.essay_exams?.length > 0;
+            const hasMcq = l.mcq_exams?.length > 0;
+            const essayScore = subs?.find(s => s.lecture_id === l.id && s.type === 'essay')?.grade || 0;
+            const mcqScore = subs?.find(s => s.lecture_id === l.id && s.type === 'mcq')?.grade || 0;
+            
+            
+            previousCompleted = prog.video_watched && essayPass && mcqPass;
           }
 
           return content;

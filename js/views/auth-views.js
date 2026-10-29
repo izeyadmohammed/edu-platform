@@ -5,13 +5,13 @@ export default async function authView(el) {
   if (isSignup) renderSignup(el); else renderLogin(el);
 }
 function renderLogin(el) {
-  el.innerHTML = `<div class="max-w-md mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 mt-10">
+  el.innerHTML = `<div class="glass-card max-w-md mx-auto p-8 mt-10 animate-fade-up">
     <h2 class="text-2xl font-extrabold mb-6 text-center">تسجيل الدخول</h2>
     <form id="login-form" class="space-y-4">
-      <div><label class="block text-sm mb-1">رقم الهاتف</label><input name="phone" required type="tel" placeholder="01xxxxxxxxx" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900"></div>
-      <div><label class="block text-sm mb-1">كلمة المرور</label><input name="password" required type="password" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900"></div>
-      <button class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg">دخول</button>
-      <div class="flex justify-between text-sm"><a href="#/signup" class="text-blue-600 hover:underline">حساب جديد</a><a href="#" id="forgot" class="text-red-600 hover:underline">نسيت كلمة المرور؟</a></div>
+      <div><label class="block text-sm font-bold mb-1">رقم الهاتف</label><input name="phone" required type="tel" placeholder="01xxxxxxxxx" class="input-field" dir="ltr"></div>
+      <div><label class="block text-sm font-bold mb-1">كلمة المرور</label><input name="password" required type="password" class="input-field" dir="ltr"></div>
+      <button class="btn-primary w-full py-3">دخول</button>
+      <div class="flex justify-between text-sm mt-4"><a href="#/signup" class="text-blue-400 hover:underline">حساب جديد</a><a href="#" id="forgot" class="text-red-400 hover:underline">نسيت كلمة المرور؟</a></div>
     </form></div>`;
   el.querySelector('#login-form').onsubmit = async (e) => {
     e.preventDefault();
@@ -25,22 +25,24 @@ function renderLogin(el) {
   };
   el.querySelector('#forgot').onclick = (e) => {
     e.preventDefault();
-    modal({ title: 'استعادة كلمة المرور', body: `<p class="mb-3">تواصل مع الدعم عبر واتساب:</p><a target="_blank" href="https://wa.me/201126346329" class="block text-center py-3 bg-green-500 text-white rounded-lg font-bold"><i class="fa-brands fa-whatsapp"></i> فتح واتساب</a>` });
+    modal({ title: 'استعادة كلمة المرور', body: `<p class="mb-3">تواصل مع الدعم عبر واتساب:</p><a target="_blank" href="https://wa.me/201126346329" class="block text-center py-3 bg-green-500/20 text-green-400 rounded-lg font-bold border border-green-500/30"><i class="fa-brands fa-whatsapp"></i> فتح واتساب</a>` });
   };
 }
 function renderSignup(el) {
-  el.innerHTML = `<div class="max-w-md mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 mt-10">
+  const grades = ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي', 'الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي'];
+  el.innerHTML = `<div class="glass-card max-w-md mx-auto p-8 mt-10 animate-fade-up">
     <h2 class="text-2xl font-extrabold mb-6 text-center">إنشاء حساب جديد</h2>
     <form id="signup-form" class="space-y-3">
-      <input name="name" required placeholder="الاسم الثلاثي" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
-      <input name="phone" required type="tel" placeholder="رقم الهاتف" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
-      <input name="parent_phone" required type="tel" placeholder="رقم ولي الأمر" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
-      <select name="grade" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
-        <option value="">اختر الصف</option><option>الأول الثانوي</option><option>الثاني الثانوي</option><option>الثالث الثانوي</option><option>الأول الإعدادي</option><option>الثاني الإعدادي</option><option>الثالث الإعدادي</option>
+      <input name="name" required placeholder="الاسم الثلاثي" class="input-field">
+      <input name="phone" required type="tel" placeholder="رقم الهاتف" class="input-field" dir="ltr">
+      <input name="parent_phone" required type="tel" placeholder="رقم ولي الأمر" class="input-field" dir="ltr">
+      <select name="grade" required class="input-field">
+        <option value="">اختر الصف</option>
+        ${grades.map(g => `<option value="${g}">${g}</option>`).join('')}
       </select>
-      <input name="password" required type="password" minlength="8" placeholder="كلمة المرور" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
-      <button class="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg">تسجيل</button>
-      <a href="#/login" class="block text-center text-sm text-blue-600 hover:underline">لدي حساب بالفعل</a>
+      <input name="password" required type="password" minlength="8" placeholder="كلمة المرور (8 أحرف على الأقل)" class="input-field" dir="ltr">
+      <button class="btn-primary w-full py-3 mt-2">تسجيل</button>
+      <a href="#/login" class="block text-center text-sm text-blue-400 hover:underline mt-3">لدي حساب بالفعل</a>
     </form></div>`;
   el.querySelector('#signup-form').onsubmit = async (e) => {
     e.preventDefault();

@@ -29,7 +29,7 @@ export default async function adminView(el) {
 
     <div class="grid grid-cols-1 gap-6 animate-fade-up">
       <div class="glass-card p-6 overflow-x-auto">
-        <h3 class="font-bold text-lg mb-4">إدارة الطلاب وإحصائياتهم</h3>
+        <h3 class="font-bold text-lg mb-4">إدارة الطلاب</h3>
         <table class="w-full text-right text-sm">
           <thead class="bg-white/5 text-gray-400">
             <tr>
@@ -83,7 +83,84 @@ export default async function adminView(el) {
       </div>
     </div>`;
 
-  // تعديل بيانات الطالب (مع تغيير الباسورد)
+  // --- إعدادات المنصة الكاملة ---
+  el.querySelector('#settings-btn').onclick = () => {
+    const s = settings || {};
+    const m = modal({
+      title: 'إعدادات المنصة',
+      body: `
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          <h4 class="font-bold text-blue-400 mb-2">الهوية البصرية</h4>
+          <div>
+            <label class="block text-sm font-bold mb-1">اسم المنصة</label>
+            <input id="platform-name" value="${escapeHtml(s.platform_name || '')}" class="input-field">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">لوجو المنصة</label>
+            <div class="flex items-center gap-3">
+              <div id="logo-prev" class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden border border-white/10">
+                ${s.logo_url ? `<img src="${s.logo_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cube text-gray-600"></i>`}
+              </div>
+              <input type="file" id="logo-upload" accept="image/*" class="text-sm w-full file:bg-blue-500/10 file:text-blue-400 file:border-0 file:rounded-lg file:px-3 file:py-1">
+            </div>
+          </div>
+
+          <h4 class="font-bold text-green-400 mt-6 mb-2">أرقام التواصل</h4>
+          <div>
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للدعم</label>
+            <input id="support-whatsapp" value="${escapeHtml(s.support_whatsapp || '')}" class="input-field" dir="ltr">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للمطور</label>
+            <input id="developer-whatsapp" value="${escapeHtml(s.developer_whatsapp || '')}" class="input-field" dir="ltr">
+          </div>
+
+          <h4 class="font-bold text-blue-400 mt-6 mb-2">روابط التواصل الاجتماعي</h4>
+          ${socialInput('facebook', 'فيسبوك', s.facebook_url, s.show_facebook)}
+          ${socialInput('whatsapp', 'واتساب', s.whatsapp_url, s.show_whatsapp)}
+          ${socialInput('telegram', 'تيلجرام', s.telegram_url, s.show_telegram)}
+          ${socialInput('instagram', 'إنستجرام', s.instagram_url, s.show_instagram)}
+          ${socialInput('tiktok', 'تيك توك', s.tiktok_url, s.show_tiktok)}
+        </div>`,
+      actions: `<button id="save-settings" class="btn-primary w-full">حفظ جميع الإعدادات</button>`
+    });
+
+    let newLogoUrl = s.logo_url || '';
+    m.root.querySelector('#logo-upload').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
+      const { error } = await supabase.storage.from('images').upload(fileName, file);
+      if (error) { toast('فشل الرفع', 'error'); return; }
+      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+      newLogoUrl = data.publicUrl;
+      m.root.querySelector('#logo-prev').innerHTML = `<img src="${newLogoUrl}" class="w-full h-full object-cover">`;
+    };
+
+    m.root.querySelector('#save-settings').onclick = async () => {
+      const updates = {
+        platform_name: m.root.querySelector('#platform-name').value,
+        logo_url: newLogoUrl,
+        support_whatsapp: m.root.querySelector('#support-whatsapp').value,
+        developer_whatsapp: m.root.querySelector('#developer-whatsapp').value,
+        facebook_url: m.root.querySelector('#url-facebook').value,
+        whatsapp_url: m.root.querySelector('#url-whatsapp').value,
+        telegram_url: m.root.querySelector('#url-telegram').value,
+        instagram_url: m.root.querySelector('#url-instagram').value,
+        tiktok_url: m.root.querySelector('#url-tiktok').value,
+        show_facebook: m.root.querySelector('#show-facebook').checked,
+        show_whatsapp: m.root.querySelector('#show-whatsapp').checked,
+        show_telegram: m.root.querySelector('#show-telegram').checked,
+        show_instagram: m.root.querySelector('#show-instagram').checked,
+        show_tiktok: m.root.querySelector('#show-tiktok').checked,
+      };
+      const { error } = await supabase.from('settings').update(updates).eq('id', 1);
+      if (error) { toast(error.message, 'error'); return; }
+      toast('تم الحفظ', 'success'); m.close(); location.reload();
+    };
+  };
+
+  // باقي أزرار الطلاب (تعديل، شحن، حظر، حذف) - شغالة زي ما هي
   el.querySelectorAll('[data-edit]').forEach(b => {
     b.onclick = () => {
       const s = profiles.find(x => x.id === b.dataset.edit);
@@ -112,12 +189,10 @@ export default async function adminView(el) {
           };
           const newPass = m.root.querySelector('#e-pass').value;
           
-          // 1. تحديث البيانات العادية
           const { error } = await supabase.from('profiles').update(updates).eq('id', s.id);
           if (error) throw new Error(error.message);
 
-          // 2. تحديث كلمة المرور لو مكتوبة (عبر Edge Function)
-          if (newPass.length >= 6) {
+          if (newPass.length >= 8) {
             const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/admin_update_user`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -128,16 +203,12 @@ export default async function adminView(el) {
           }
           
           toast('تم الحفظ بنجاح', 'success');
-          m.close();
-          location.reload();
-        } catch (err) {
-          toast(err.message, 'error');
-        }
+          m.close(); location.reload();
+        } catch (err) { toast(err.message, 'error'); }
       };
     };
   });
 
-  // تعديل الرصيد
   el.querySelectorAll('[data-charge]').forEach(b => {
     b.onclick = () => {
       const m = modal({
@@ -157,7 +228,6 @@ export default async function adminView(el) {
     };
   });
 
-  // حظر/فك حظر
   el.querySelectorAll('[data-block]').forEach(b => {
     b.onclick = async () => {
       const blk = b.dataset.blk === 'true';
@@ -166,7 +236,6 @@ export default async function adminView(el) {
     };
   });
 
-  // حذف طالب
   el.querySelectorAll('[data-delu]').forEach(b => {
     b.onclick = async () => {
       if (!confirm('حذف الطالب نهائياً؟')) return;
@@ -175,7 +244,6 @@ export default async function adminView(el) {
     };
   });
 
-  // توليد أكواد
   el.querySelector('#gen-codes').onclick = () => {
     const m = modal({
       title: 'توليد أكواد شحن',
@@ -192,63 +260,19 @@ export default async function adminView(el) {
       if (error) toast(error.message, 'error'); else { toast('تم', 'success'); m.close(); location.reload(); }
     };
   };
+}
 
-  // إعدادات المنصة (نفس الكود القديم)
-  el.querySelector('#settings-btn').onclick = () => {
-    const s = settings || {};
-    const m = modal({
-      title: 'إعدادات المنصة',
-      body: `
-        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-          <div>
-            <label class="block text-sm font-bold mb-1">اسم المنصة</label>
-            <input id="platform-name" value="${escapeHtml(s.platform_name || '')}" class="input-field">
-          </div>
-          <div>
-            <label class="block text-sm font-bold mb-1">لوجو المنصة</label>
-            <div class="flex items-center gap-3">
-              <div id="logo-prev" class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden border border-white/10">
-                ${s.logo_url ? `<img src="${s.logo_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cube text-gray-600"></i>`}
-              </div>
-              <input type="file" id="logo-upload" accept="image/*" class="text-sm w-full file:bg-blue-500/10 file:text-blue-400 file:border-0 file:rounded-lg file:px-3 file:py-1">
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-bold mb-1">رقم الواتساب للدعم</label>
-            <input id="support-whatsapp" value="${escapeHtml(s.support_whatsapp || '')}" class="input-field" dir="ltr">
-          </div>
-          <div>
-            <label class="block text-sm font-bold mb-1">رقم الواتساب للمطور</label>
-            <input id="developer-whatsapp" value="${escapeHtml(s.developer_whatsapp || '')}" class="input-field" dir="ltr">
-          </div>
-        </div>`,
-      actions: `<button id="save-settings" class="btn-primary w-full">حفظ</button>`
-    });
-
-    let newLogoUrl = s.logo_url || '';
-    m.root.querySelector('#logo-upload').onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
-      const { error } = await supabase.storage.from('images').upload(fileName, file);
-      if (error) { toast('فشل الرفع', 'error'); return; }
-      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
-      newLogoUrl = data.publicUrl;
-      m.root.querySelector('#logo-prev').innerHTML = `<img src="${newLogoUrl}" class="w-full h-full object-cover">`;
-    };
-
-    m.root.querySelector('#save-settings').onclick = async () => {
-      const updates = {
-        platform_name: m.root.querySelector('#platform-name').value,
-        logo_url: newLogoUrl,
-        support_whatsapp: m.root.querySelector('#support-whatsapp').value,
-        developer_whatsapp: m.root.querySelector('#developer-whatsapp').value
-      };
-      const { error } = await supabase.from('settings').update(updates).eq('id', 1);
-      if (error) toast(error.message, 'error');
-      else { toast('تم', 'success'); m.close(); location.reload(); }
-    };
-  };
+function socialInput(key, label, val, show) {
+  return `<div class="p-3 rounded-lg bg-black/20 border border-white/5 mb-2">
+    <div class="flex justify-between items-center mb-2">
+      <span class="font-bold text-sm">${label}</span>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="show-${key}" class="sr-only peer" ${show ? 'checked' : ''}>
+        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+      </label>
+    </div>
+    <input id="url-${key}" value="${escapeHtml(val || '')}" placeholder="https://..." class="input-field text-xs">
+  </div>`;
 }
 
 function statCard(icon, label, val, colorClass) {

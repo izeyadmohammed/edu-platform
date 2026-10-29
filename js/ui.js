@@ -18,7 +18,8 @@ export async function getSettings() {
   const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
   if (data) {
     store.settings = data;
-    document.getElementById('page-title').textContent = data.platform_name || 'منصة التعليم';
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) titleEl.textContent = data.platform_name || 'منصة التعليم';
   }
 }
 
@@ -80,7 +81,7 @@ export async function renderHeader() {
     </nav>
 
     <div class="flex items-center gap-2 md:gap-3">
-      <button id="dark-toggle" class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition text-main">
+      <button id="dark-toggle" class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition text-main">
         <i class="fa-solid ${isDark ? 'fa-sun' : 'fa-moon'}"></i>
       </button>
 
@@ -97,7 +98,7 @@ export async function renderHeader() {
       ` : ''}
 
       ${p ? `
-        <a href="#/notifications" class="relative w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition text-main">
+        <a href="#/notifications" class="relative w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition text-main">
           <i class="fa-regular fa-bell"></i>
           ${unread ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-gray-900">${unread}</span>` : ''}
         </a>
@@ -118,4 +119,27 @@ export async function renderHeader() {
   };
 }
 
-// ... (renderFooter و setLoading زي ما هم)
+export async function renderFooter() {
+  const f = document.getElementById('app-footer');
+  if (!f) return;
+  if (!store.settings) await getSettings();
+  const s = store.settings || {};
+  f.className = 'border-t border-border py-8 mt-12 bg-black/5 dark:bg-black/20';
+  f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted">
+    <div class="flex items-center gap-2 font-bold text-main"><i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}</div>
+    <div class="flex gap-4 font-bold text-xs">
+      <a href="#/policy/terms" class="hover:text-primary transition">شروط الاستخدام</a>
+      <a href="#/policy/privacy" class="hover:text-primary transition">سياسة الخصوصية</a>
+      <a href="#/policy/refund" class="hover:text-primary transition">سياسة الاسترجاع</a>
+    </div>
+    <p>&copy; ${new Date().getFullYear()} جميع الحقوق محفوظة</p>
+  </div>`;
+}
+
+export function setLoading(el = document.getElementById('app-main'), msg = 'جاري التحميل...') {
+  if (!el) return;
+  el.innerHTML = `<div class="flex flex-col items-center justify-center py-32 text-muted animate-fade-up">
+    <div class="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+    <p class="font-bold">${msg}</p>
+  </div>`;
+}

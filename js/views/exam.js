@@ -12,9 +12,9 @@ export default async function examView(el, params) {
   if (existing) {
     el.innerHTML = `
       <div class="glass-card max-w-lg mx-auto p-8 text-center animate-fade-up">
-        <i class="fa-solid fa-circle-check text-green-400 text-6xl mb-4"></i>
-        <h2 class="text-2xl font-bold mb-2">لقد سلّمت هذا الامتحان بالفعل</h2>
-        <p class="text-lg mb-6 text-gray-400">الدرجة: <strong class="text-blue-400 text-2xl">${existing.score ?? '-'} / ${existing.total ?? '-'}</strong></p>
+        <i class="fa-solid fa-circle-check text-green-500 text-6xl mb-4"></i>
+        <h2 class="text-2xl font-bold mb-2 text-main">لقد سلّمت هذا الامتحان بالفعل</h2>
+        <p class="text-lg mb-6 text-muted">الدرجة: <strong class="text-primary text-2xl">${existing.score ?? '-'} / ${existing.total ?? '-'}</strong></p>
         <a href="#/courses/${lectureId}" class="btn-primary">رجوع للكورس</a>
       </div>`;
     return;
@@ -22,7 +22,7 @@ export default async function examView(el, params) {
 
   const { data: lecture } = await supabase.from('lectures').select('*').eq('id', lectureId).single();
   const exam = (lecture?.mcq_exams || []).find(x => x.id === examId);
-  if (!exam) { el.innerHTML = `<p class="text-center py-10 text-red-400">الامتحان غير موجود</p>`; return; }
+  if (!exam) { el.innerHTML = `<p class="text-center py-10 text-red-500">الامتحان غير موجود</p>`; return; }
 
   lockExamPage();
   let current = 0;
@@ -34,24 +34,24 @@ export default async function examView(el, params) {
   el.innerHTML = `
     <div class="max-w-3xl mx-auto relative animate-fade-up" id="exam-wrap">
       <div class="glass-card p-6 relative">
-        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-          <h1 class="text-xl font-black">${escapeHtml(exam.title)}</h1>
-          <div class="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg font-black border border-red-500/30" id="timer">--:--</div>
+        <div class="flex justify-between items-center mb-6 border-b border-border pb-4">
+          <h1 class="text-xl font-black text-main">${escapeHtml(exam.title)}</h1>
+          <div class="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg font-black border border-red-500/20" id="timer">--:--</div>
         </div>
         <div class="mb-6">
-          <div class="bg-white/5 rounded-full h-2 overflow-hidden">
-            <div id="progress" class="bg-blue-500 h-full transition-all duration-300" style="width:0%"></div>
+          <div class="bg-black/5 dark:bg-white/5 rounded-full h-2 overflow-hidden">
+            <div id="progress" class="bg-primary h-full transition-all duration-300" style="width:0%"></div>
           </div>
-          <p class="text-sm text-gray-400 mt-2 font-bold" id="qcount"></p>
+          <p class="text-sm text-muted mt-2 font-bold" id="qcount"></p>
         </div>
         
         <div id="question" class="min-h-[200px]"></div>
         
-        <div class="flex justify-between items-center mt-8 pt-4 border-t border-white/10">
-          <button id="prev" class="px-5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-bold transition">السابق</button>
+        <div class="flex justify-between items-center mt-8 pt-4 border-t border-border">
+          <button id="prev" class="px-5 py-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-sm font-bold transition text-main">السابق</button>
           <div class="flex gap-2">
-            <button id="skip" class="px-5 py-2 rounded-lg bg-yellow-500/20 text-yellow-400 text-sm font-bold hover:bg-yellow-500/30 transition">تخطي</button>
-            <button id="next" class="px-5 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-bold hover:bg-blue-500/30 transition">التالي</button>
+            <button id="skip" class="px-5 py-2 rounded-lg bg-yellow-500/10 text-yellow-600 text-sm font-bold hover:bg-yellow-500/20 transition">تخطي</button>
+            <button id="next" class="px-5 py-2 rounded-lg bg-blue-500/10 text-blue-500 text-sm font-bold hover:bg-blue-500/20 transition">التالي</button>
             <button id="submit" class="btn-accent text-sm">تسليم نهائي</button>
           </div>
         </div>
@@ -71,13 +71,13 @@ export default async function examView(el, params) {
     progress.style.width = `${((current + 1) / exam.questions.length) * 100}%`;
     
     qbox.innerHTML = `
-      ${q.image ? `<img src="${q.image}" class="max-h-48 rounded-lg mb-4 border border-white/10">` : ''}
-      <h2 class="font-bold text-lg mb-6 leading-relaxed">${escapeHtml(q.questionText)}</h2>
+      ${q.image ? `<img src="${q.image}" class="max-h-48 rounded-lg mb-4 border border-border">` : ''}
+      <h2 class="font-bold text-lg mb-6 leading-relaxed text-main">${escapeHtml(q.questionText)}</h2>
       <div class="space-y-3">
         ${q.options.map((o, i) => `
-          <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${answers[current] === i ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:bg-white/5'}">
+          <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${answers[current] === i ? 'border-blue-500 bg-blue-500/10' : 'border-border hover:bg-black/5 dark:hover:bg-white/5'}">
             <input type="radio" name="ans" ${answers[current] === i ? 'checked' : ''} value="${i}" onchange="window.__pick(${i})" class="w-4 h-4 accent-blue-500">
-            <span class="font-bold">${escapeHtml(o.text)}</span>
+            <span class="font-bold text-main">${escapeHtml(o.text)}</span>
           </label>`).join('')}
       </div>`;
     window.__pick = (i) => { answers[current] = i; render(); };
@@ -89,7 +89,6 @@ export default async function examView(el, params) {
   el.querySelector('#skip').onclick = () => { if (current < exam.questions.length - 1) { current++; render(); } };
   el.querySelector('#submit').onclick = () => { if(confirm('هل أنت متأكد من تسليم الامتحان؟')) submitExam(); };
 
-  // Timer
   const intv = setInterval(() => {
     timeLeft--;
     const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
@@ -97,16 +96,11 @@ export default async function examView(el, params) {
     if (timeLeft <= 0) { clearInterval(intv); submitExam(true); }
   }, 1000);
 
-  // Anti-cheat (Visibility Change)
   const visibilityHandler = () => {
     if (document.hidden && !isSubmitted) {
       exitWarnings++;
-      if (exitWarnings === 1) {
-        alert('تحذير: لقد خرجت من صفحة الامتحان. المرة القادمة سيتم تسليم الامتحان تلقائياً!');
-      } else {
-        alert('لقد خرجت مرة أخرى. سيتم تسليم الامتحان الآن.');
-        submitExam(true);
-      }
+      if (exitWarnings === 1) alert('تحذير: لقد خرجت من صفحة الامتحان. المرة القادمة سيتم تسليم الامتحان تلقائياً!');
+      else { alert('لقد خرجت مرة أخرى. سيتم تسليم الامتحان الآن.'); submitExam(true); }
     }
   };
   document.addEventListener('visibilitychange', visibilityHandler);
@@ -117,31 +111,28 @@ export default async function examView(el, params) {
     clearInterval(intv);
     document.removeEventListener('visibilitychange', visibilityHandler);
 
-    let score = 0;
-    exam.questions.forEach((q, i) => { if (answers[i] === q.correctIndex) score++; });
-    
-    const payload = {
-      id: 'sub_' + Date.now(), type: 'mcq',
-      student_id: store.profile.id, student_name: store.profile.name,
-      course_id: lecture.course_id, lecture_id: lectureId, exam_id: examId,
-      answers, score, total: exam.questions.length,
-      status: 'تم التصحيح', grade: score
-    };
-    
     try {
-      await supabase.from('exam_submissions').insert(payload);
-      // تحديث تقدم الطالب
-      const { data: prog } = await supabase.from('student_progress').select('id').eq('student_id', store.profile.id).eq('lecture_id', lectureId).single();
-      if (prog) await supabase.from('student_progress').update({ exam_submitted: true }).eq('id', prog.id);
-      else await supabase.from('student_progress').insert({ student_id: store.profile.id, lecture_id: lectureId, exam_submitted: true });
-
+      const res = await fetch(`https://pephaughlzmtzphkt.supabase.co/functions/v1/submit_exam`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lecture_id: lectureId,
+          exam_id: examId,
+          answers: answers,
+          student_id: store.profile.id,
+          student_name: store.profile.name
+        })
+      });
+      const out = await res.json();
+      if (!res.ok) throw new Error(out.error || 'فشل التسليم');
+      
       el.innerHTML = `
         <div class="glass-card max-w-lg mx-auto p-8 text-center animate-fade-up">
-          <i class="fa-solid fa-circle-check text-green-400 text-6xl mb-4"></i>
-          <h2 class="text-2xl font-bold mb-2">${force ? 'تم التسليم التلقائي' : 'تم التسليم بنجاح'}</h2>
-          <p class="text-lg mb-6 text-gray-400">درجتك: <strong class="text-blue-400 text-3xl">${score} / ${exam.questions.length}</strong></p>
+          <i class="fa-solid fa-circle-check text-green-500 text-6xl mb-4"></i>
+          <h2 class="text-2xl font-bold mb-2 text-main">${force ? 'تم التسليم التلقائي' : 'تم التسليم بنجاح'}</h2>
+          <p class="text-lg mb-6 text-muted">درجتك: <strong class="text-primary text-3xl">${out.score} / ${out.total}</strong></p>
           <a href="#/courses/${lecture.course_id}" class="btn-primary">رجوع للكورس</a>
         </div>`;
-    } catch (e) { toast(e.message, 'error'); }
+    } catch (e) { toast(e.message, 'error'); isSubmitted = false; }
   }
 }

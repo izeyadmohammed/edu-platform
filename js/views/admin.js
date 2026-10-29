@@ -28,7 +28,6 @@ export default async function adminView(el) {
     </div>
 
     <div class="grid grid-cols-1 gap-6 animate-fade-up">
-      <!-- جدول الطلاب -->
       <div class="glass-card p-6 overflow-x-auto">
         <h3 class="font-bold text-lg mb-4">إدارة الطلاب وإحصائياتهم</h3>
         <table class="w-full text-right text-sm">
@@ -36,7 +35,6 @@ export default async function adminView(el) {
             <tr>
               <th class="p-3 rounded-r-lg">الطالب</th>
               <th class="p-3">الصف</th>
-              <th class="p-3">الكورسات</th>
               <th class="p-3">المحفظة</th>
               <th class="p-3">الأجهزة</th>
               <th class="p-3 rounded-l-lg">إجراءات</th>
@@ -53,25 +51,22 @@ export default async function adminView(el) {
                   <p class="text-xs text-gray-500" dir="ltr">${escapeHtml(s.student_phone || '')}</p>
                 </td>
                 <td class="p-3 text-gray-400">${escapeHtml(s.student_grade || '-')}</td>
-                <td class="p-3 font-bold text-blue-400">${s.courses_count}</td>
                 <td class="p-3 font-bold text-green-400">${formatMoney(studentData.wallet || 0)}</td>
                 <td class="p-3 font-bold text-purple-400">${studentData.max_devices || 1}</td>
                 <td class="p-3">
                   <div class="flex gap-1 justify-end">
-                    <button data-edit="${s.student_id}" class="w-8 h-8 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30" title="تعديل"><i class="fa-solid fa-pen text-xs"></i></button>
-                    <button data-charge="${s.student_id}" class="w-8 h-8 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30" title="رصيد"><i class="fa-solid fa-plus text-xs"></i></button>
-                    <button data-block="${s.student_id}" data-blk="${isBlocked}" class="w-8 h-8 rounded bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30" title="${isBlocked ? 'فك حظر' : 'حظر'}"><i class="fa-solid ${isBlocked ? 'fa-unlock' : 'fa-ban'} text-xs"></i></button>
-                    <button data-delu="${s.student_id}" class="w-8 h-8 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30" title="حذف"><i class="fa-solid fa-trash text-xs"></i></button>
+                    <button data-edit="${s.student_id}" class="w-8 h-8 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button data-charge="${s.student_id}" class="w-8 h-8 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30"><i class="fa-solid fa-plus text-xs"></i></button>
+                    <button data-block="${s.student_id}" data-blk="${isBlocked}" class="w-8 h-8 rounded bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"><i class="fa-solid ${isBlocked ? 'fa-unlock' : 'fa-ban'} text-xs"></i></button>
+                    <button data-delu="${s.student_id}" class="w-8 h-8 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30"><i class="fa-solid fa-trash text-xs"></i></button>
                   </div>
                 </td>
-              </tr>
-              `;
-            }).join('') || '<tr><td colspan="6" class="text-center p-4 text-gray-500">لا يوجد طلاب</td></tr>'}
+              </tr>`;
+            }).join('') || '<tr><td colspan="5" class="text-center p-4 text-gray-500">لا يوجد طلاب</td></tr>'}
           </tbody>
         </table>
       </div>
 
-      <!-- أكواد الشحن -->
       <div class="glass-card p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-lg">أكواد الشحن</h3>
@@ -88,7 +83,7 @@ export default async function adminView(el) {
       </div>
     </div>`;
 
-  // --- إدارة الطالب (تعديل - شحن - حظر - حذف) ---
+  // تعديل بيانات الطالب (مع تغيير الباسورد)
   el.querySelectorAll('[data-edit]').forEach(b => {
     b.onclick = () => {
       const s = profiles.find(x => x.id === b.dataset.edit);
@@ -101,46 +96,48 @@ export default async function adminView(el) {
             <input id="e-parent" value="${escapeHtml(s.parent_phone || '')}" placeholder="رقم ولي الأمر" class="input-field" dir="ltr">
             <input id="e-grade" value="${escapeHtml(s.grade || '')}" placeholder="الصف" class="input-field">
             <input id="e-pass" type="password" placeholder="كلمة مرور جديدة (اتركها فاضية للتجاهل)" class="input-field">
-            <div>
-              <label class="block text-sm font-bold mb-1">عدد الأجهزة المسموح بها</label>
-              <input id="e-devices" type="number" value="${s.max_devices || 1}" class="input-field">
-            </div>
+            <input id="e-devices" type="number" value="${s.max_devices || 1}" placeholder="عدد الأجهزة" class="input-field">
           </div>`,
         actions: `<button id="save" class="btn-primary w-full">حفظ التعديلات</button>`
       });
+      
       m.root.querySelector('#save').onclick = async () => {
-        const updates = {
-          name: m.root.querySelector('#e-name').value,
-          phone: m.root.querySelector('#e-phone').value,
-          parent_phone: m.root.querySelector('#e-parent').value,
-          grade: m.root.querySelector('#e-grade').value,
-          max_devices: +m.root.querySelector('#e-devices').value || 1
-        };
-        const newPass = m.root.querySelector('#e-pass').value;
-        
         try {
-          // تحديث بيانات البروفايل
+          const updates = {
+            name: m.root.querySelector('#e-name').value,
+            phone: m.root.querySelector('#e-phone').value,
+            parent_phone: m.root.querySelector('#e-parent').value,
+            grade: m.root.querySelector('#e-grade').value,
+            max_devices: +m.root.querySelector('#e-devices').value || 1
+          };
+          const newPass = m.root.querySelector('#e-pass').value;
+          
+          // 1. تحديث البيانات العادية
           const { error } = await supabase.from('profiles').update(updates).eq('id', s.id);
           if (error) throw new Error(error.message);
 
-          // تحديث كلمة المرور عبر Edge Function
+          // 2. تحديث كلمة المرور لو مكتوبة (عبر Edge Function)
           if (newPass.length >= 6) {
             const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/admin_update_user`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ user_id: s.id, new_password: newPass })
             });
-              const err = await res.json();
-              throw new Error('فشل تغيير الباسورد: ' + (err.error || 'خطأ'));
-            }
+            const out = await res.json();
+            if (!res.ok) throw new Error('فشل تغيير الباسورد: ' + (out.error || 'خطأ'));
           }
-          toast('تم حفظ التعديلات بنجاح', 'success');
-          m.close(); location.reload();
-        } catch (e) { toast(e.message, 'error'); }
+          
+          toast('تم الحفظ بنجاح', 'success');
+          m.close();
+          location.reload();
+        } catch (err) {
+          toast(err.message, 'error');
+        }
       };
     };
   });
 
+  // تعديل الرصيد
   el.querySelectorAll('[data-charge]').forEach(b => {
     b.onclick = () => {
       const m = modal({
@@ -160,6 +157,7 @@ export default async function adminView(el) {
     };
   });
 
+  // حظر/فك حظر
   el.querySelectorAll('[data-block]').forEach(b => {
     b.onclick = async () => {
       const blk = b.dataset.blk === 'true';
@@ -168,6 +166,7 @@ export default async function adminView(el) {
     };
   });
 
+  // حذف طالب
   el.querySelectorAll('[data-delu]').forEach(b => {
     b.onclick = async () => {
       if (!confirm('حذف الطالب نهائياً؟')) return;
@@ -176,6 +175,7 @@ export default async function adminView(el) {
     };
   });
 
+  // توليد أكواد
   el.querySelector('#gen-codes').onclick = () => {
     const m = modal({
       title: 'توليد أكواد شحن',
@@ -193,7 +193,62 @@ export default async function adminView(el) {
     };
   };
 
-  el.querySelector('#settings-btn').onclick = () => { /* نفس الكود اللي فات */ };
+  // إعدادات المنصة (نفس الكود القديم)
+  el.querySelector('#settings-btn').onclick = () => {
+    const s = settings || {};
+    const m = modal({
+      title: 'إعدادات المنصة',
+      body: `
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          <div>
+            <label class="block text-sm font-bold mb-1">اسم المنصة</label>
+            <input id="platform-name" value="${escapeHtml(s.platform_name || '')}" class="input-field">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">لوجو المنصة</label>
+            <div class="flex items-center gap-3">
+              <div id="logo-prev" class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden border border-white/10">
+                ${s.logo_url ? `<img src="${s.logo_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cube text-gray-600"></i>`}
+              </div>
+              <input type="file" id="logo-upload" accept="image/*" class="text-sm w-full file:bg-blue-500/10 file:text-blue-400 file:border-0 file:rounded-lg file:px-3 file:py-1">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للدعم</label>
+            <input id="support-whatsapp" value="${escapeHtml(s.support_whatsapp || '')}" class="input-field" dir="ltr">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للمطور</label>
+            <input id="developer-whatsapp" value="${escapeHtml(s.developer_whatsapp || '')}" class="input-field" dir="ltr">
+          </div>
+        </div>`,
+      actions: `<button id="save-settings" class="btn-primary w-full">حفظ</button>`
+    });
+
+    let newLogoUrl = s.logo_url || '';
+    m.root.querySelector('#logo-upload').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
+      const { error } = await supabase.storage.from('images').upload(fileName, file);
+      if (error) { toast('فشل الرفع', 'error'); return; }
+      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+      newLogoUrl = data.publicUrl;
+      m.root.querySelector('#logo-prev').innerHTML = `<img src="${newLogoUrl}" class="w-full h-full object-cover">`;
+    };
+
+    m.root.querySelector('#save-settings').onclick = async () => {
+      const updates = {
+        platform_name: m.root.querySelector('#platform-name').value,
+        logo_url: newLogoUrl,
+        support_whatsapp: m.root.querySelector('#support-whatsapp').value,
+        developer_whatsapp: m.root.querySelector('#developer-whatsapp').value
+      };
+      const { error } = await supabase.from('settings').update(updates).eq('id', 1);
+      if (error) toast(error.message, 'error');
+      else { toast('تم', 'success'); m.close(); location.reload(); }
+    };
+  };
 }
 
 function statCard(icon, label, val, colorClass) {

@@ -35,7 +35,7 @@ function guard(pattern) {
   const needsAuth = privateRoutes.some(p => pattern.startsWith(p.split('/:')[0]));
   if (needsAuth && !store.profile) { toast('يجب تسجيل الدخول', 'warn'); return '#/login'; }
   if (pattern === '#/admin' && role !== 'super_admin') { toast('غير مصرح', 'error'); return roleHomePath(role); }
-  if (pattern === '#/teacher' && role !== 'teacher' && role !== 'super_admin') { toast('غير مصرح', 'error'); return roleHomePath(role); }
+  if (pattern === '#/teacher' && role !== 'teacher' && role !== 'assistant' && role !== 'super_admin') { toast('غير مصرح', 'error'); return roleHomePath(role); }
   if (pattern === '#/student' && role !== 'student') { toast('غير مصرح', 'error'); return roleHomePath(role); }
   return null;
 }

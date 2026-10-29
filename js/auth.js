@@ -23,7 +23,7 @@ export async function loadProfile(){
 }
 export function roleHomePath(role){
   if(role==='super_admin')return '#/admin';
-  if(role==='teacher')return '#/teacher';
+  if(role==='teacher'||role==='assistant')return '#/teacher';
   return '#/student';
 }
 export async function bootstrapAuth(){await loadProfile();await loadAllData();}

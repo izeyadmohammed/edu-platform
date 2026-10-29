@@ -65,9 +65,9 @@ export async function renderHeader() {
   const isDark = document.documentElement.classList.contains('dark');
 
   h.className = 'glass-header sticky top-0 z-[800]';
-  h.innerHTML = `<div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
-    <a href="#/home" class="flex items-center gap-3 text-2xl font-black text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">
-      ${logoUrl ? `<img src="${logoUrl}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
+  h.innerHTML = `<div class="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+    <a href="#/home" class="flex items-center gap-2 text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">
+      ${logoUrl ? `<img src="${logoUrl}" class="w-9 h-9 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
       <span>${platformName}</span>
     </a>
     
@@ -81,28 +81,34 @@ export async function renderHeader() {
     </nav>
 
     <div class="flex items-center gap-2 md:gap-3">
-      <button id="dark-toggle" class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition text-main">
-        <i class="fa-solid ${isDark ? 'fa-sun' : 'fa-moon'}"></i>
+      <button id="dark-toggle" class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition text-main">
+        <i class="fa-solid ${isDark ? 'fa-sun' : 'fa-moon'} text-sm"></i>
       </button>
 
       ${supportNum ? `
-        <a href="https://wa.me/${supportNum}" target="_blank" class="px-3 py-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
-          <i class="fa-brands fa-whatsapp text-lg"></i> <span class="hidden sm:inline">الدعم</span>
+        <a href="https://wa.me/${supportNum}" target="_blank" class="hidden sm:flex px-3 py-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 text-xs font-bold transition items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-lg"></i> الدعم
         </a>
       ` : ''}
 
       ${devNum ? `
-        <a href="https://wa.me/${devNum}" target="_blank" class="px-3 py-2 rounded-lg bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
-          <i class="fa-solid fa-code text-lg"></i> <span class="hidden sm:inline">المطور</span>
+        <a href="https://wa.me/${devNum}" target="_blank" class="hidden sm:flex px-3 py-2 rounded-lg bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 text-xs font-bold transition items-center gap-2">
+          <i class="fa-solid fa-code text-lg"></i> المطور
         </a>
       ` : ''}
 
       ${p ? `
-        <a href="#/notifications" class="relative w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition text-main">
-          <i class="fa-regular fa-bell"></i>
-          ${unread ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-gray-900">${unread}</span>` : ''}
+        <a href="#/notifications" class="relative w-9 h-9 rounded-full glass-card flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition text-main">
+          <i class="fa-regular fa-bell text-sm"></i>
+          ${unread ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white dark:border-gray-900">${unread}</span>` : ''}
         </a>
-        <button id="logout-btn" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs md:text-sm font-bold transition">خروج</button>
+        
+        <!-- صورة البروفايل -->
+        <a href="${p.role === 'student' ? '#/student' : (p.role === 'super_admin' ? '#/admin' : '#/teacher')}" class="w-9 h-9 rounded-full overflow-hidden border-2 border-primary/50 hover:border-primary transition">
+          ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-blue-500/20 text-blue-500 flex items-center justify-center font-bold text-sm">${(p.name||'?').charAt(0)}</div>`}
+        </a>
+
+        <button id="logout-btn" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs font-bold transition">خروج</button>
       ` : `
         <a href="#/login" class="px-3 md:px-5 py-2 rounded-lg text-main font-bold hover:text-primary transition text-sm">دخول</a>
         <a href="#/signup" class="btn-primary text-xs md:text-sm px-3 md:px-5">حساب جديد</a>

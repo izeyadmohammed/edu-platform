@@ -15,8 +15,13 @@ export default async function studentView(el) {
       <div class="glass-card p-6 col-span-1 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
         <div class="relative z-10">
-          <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-500/30">
-            <i class="fa-solid fa-user text-white"></i>
+          <div class="relative w-24 h-24 mx-auto mb-4">
+            <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg shadow-blue-500/30 overflow-hidden">
+              ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-white"></i>`}
+            </div>
+            <button id="upload-profile" class="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs border-2 border-white dark:border-gray-900 shadow-lg">
+              <i class="fa-solid fa-camera"></i>
+            </button>
           </div>
           <h2 class="text-2xl font-black mb-1">${escapeHtml(p.name)}</h2>
           <p class="text-sm text-gray-400 mb-1">${escapeHtml(p.phone||'')}</p>
@@ -107,6 +112,26 @@ export default async function studentView(el) {
         location.reload(); 
       } catch (e) { toast(e.message, 'error'); }
     };
+  };
+
+  // رفع الصورة الشخصية
+  el.querySelector('#upload-profile').onclick = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      toast('جاري رفع الصورة...', 'info');
+      const fileName = `profile_${store.profile.id}_${Date.now()}.${file.name.split('.').pop()}`;
+      const { error } = await supabase.storage.from('images').upload(fileName, file);
+      if (error) { toast('فشل الرفع', 'error'); return; }
+      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+      await supabase.from('profiles').update({ image: data.publicUrl }).eq('id', store.profile.id);
+      store.profile.image = data.publicUrl;
+      toast('تم تحديث الصورة', 'success');
+      location.reload();
+    };
+    fileInput.click();
   };
 
   // تغيير الباسورد (بالتحقق من القديم)

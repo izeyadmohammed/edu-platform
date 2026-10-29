@@ -17,7 +17,10 @@ export default async function adminView(el) {
   el.innerHTML = `
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <h1 class="text-3xl font-black">لوحة <span class="text-transparent bg-clip-text bg-gradient-to-l from-purple-400 to-pink-500">المالك</span></h1>
-      <button id="settings-btn" class="btn-primary text-sm"><i class="fa-solid fa-gear mr-2"></i> إعدادات المنصة</button>
+      <div class="flex gap-2">
+        <button id="add-teacher-btn" class="px-4 py-2 bg-blue-500/10 text-blue-500 rounded-lg text-sm font-bold border border-blue-500/20"><i class="fa-solid fa-user-plus mr-1"></i> إضافة مدرس</button>
+        <button id="settings-btn" class="btn-primary text-sm"><i class="fa-solid fa-gear mr-2"></i> إعدادات المنصة</button>
+      </div>
     </div>
     
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fade-up">
@@ -243,6 +246,34 @@ export default async function adminView(el) {
       if (error) toast(error.message, 'error'); else { toast('حذف', 'success'); location.reload(); }
     };
   });
+
+  el.querySelector('#add-teacher-btn').onclick = () => {
+    const m = modal({
+      title: 'إضافة مدرس جديد',
+      body: `
+        <div class="space-y-3">
+          <input id="t-name" placeholder="اسم المدرس" class="input-field">
+          <input id="t-phone" placeholder="رقم الهاتف" class="input-field" dir="ltr">
+          <input id="t-pass" type="password" placeholder="كلمة المرور (افتراضي 12345678)" class="input-field" dir="ltr">
+        </div>`,
+      actions: `<button id="save-teacher" class="btn-primary w-full">إضافة المدرس</button>`
+    });
+    m.root.querySelector('#save-teacher').onclick = async () => {
+      const name = m.root.querySelector('#t-name').value;
+      const phone = m.root.querySelector('#t-phone').value;
+      const pass = m.root.querySelector('#t-pass').value;
+      try {
+        const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/create_teacher`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, password: pass })
+        });
+        const out = await res.json();
+        toast('تم إنشاء المدرس. الباسورد: ' + out.default_password, 'success');
+        m.close(); location.reload();
+      } catch (e) { toast(e.message, 'error'); }
+    };
+  };
 
   el.querySelector('#gen-codes').onclick = () => {
     const m = modal({

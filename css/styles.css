@@ -117,3 +117,34 @@ iframe#player-container-0, iframe[id^="player-container-"] {
 .video-crop {
   pointer-events: auto;
 }
+
+/* إصلاح الفيديو */
+iframe {
+  pointer-events: auto !important;
+}
+
+/* العلامة المائية المتحركة */
+.watermark-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  z-index: 999 !important;
+}
+.watermark-item {
+  position: absolute !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: rgba(255, 255, 255, 0.2) !important;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;
+  white-space: nowrap !important;
+  user-select: none !important;
+  animation: float 20s linear infinite !important;
+}
+@keyframes float {
+  0% { transform: translate(0, 0) rotate(-15deg); }
+  25% { transform: translate(30vw, 20vh) rotate(-15deg); }
+  50% { transform: translate(60vw, 40vh) rotate(-15deg); }
+  75% { transform: translate(30vw, 70vh) rotate(-15deg); }
+  100% { transform: translate(0, 0) rotate(-15deg); }
+}

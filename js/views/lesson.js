@@ -23,29 +23,21 @@ export default async function lessonView(el, params) {
 
         <div class="space-y-8">
           ${(lecture.videos||[]).map(v => `
-            <div class="rounded-xl overflow-hidden bg-black shadow-2xl relative group">
+            <div class="rounded-xl overflow-hidden bg-black shadow-2xl relative">
               
-              <!-- مشغل الفيديو مع إخفاء الحواف -->
+              <!-- مشغل الفيديو -->
               <div class="relative w-full aspect-video overflow-hidden bg-black">
                 <iframe 
-                  class="absolute w-[110%] h-[130%] -top-[15%] -left-[5%]" 
-                  src="${youtubeEmbed(v.url)}?controls=0&rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1" 
+                  class="absolute w-full h-full top-0 left-0" 
+                  src="${youtubeEmbed(v.url)}?rel=0&modestbranding=1&showinfo=0" 
                   frameborder="0" 
                   allow="autoplay; encrypted-media" 
                   allowfullscreen>
                 </iframe>
-                
-                <!-- طبقة فوق الفيديو عشان تمنع الدوس على يوتيوب وتظهر زرار التشغيل -->
-                <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
-                   <div class="w-16 h-16 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center pointer-events-auto cursor-pointer hover:scale-110 transition">
-                     <i class="fa-solid fa-play text-white text-2xl pr-1"></i>
-                   </div>
-                </div>
               </div>
 
-              <div class="p-4 bg-gray-900 flex justify-between items-center relative z-20">
+              <div class="p-4 bg-gray-900">
                  <p class="font-bold text-white">${escapeHtml(v.title)}</p>
-                 <a target="_blank" href="${v.url}" class="text-xs text-gray-400 hover:text-white">مشاهدة على يوتيوب</a>
               </div>
             </div>
           `).join('')}
@@ -96,6 +88,7 @@ export default async function lessonView(el, params) {
     </div>
   `;
 
+  // إضافة العلامة المائية المتحركة
   if (p?.role === 'student') {
     const wrap = el.querySelector('#lesson-wrap');
     if (wrap) watermark(wrap, p.name + ' - ' + (p.phone||''));

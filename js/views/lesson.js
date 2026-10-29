@@ -1,6 +1,6 @@
-import { supabase, store, refreshLectures } from '../config.js';
-import { escapeHtml, watermark, youtubeEmbed, uid } from '../utils.js';
-import { toast, modal } from '../ui.js';
+import { supabase, store } from '../config.js';
+import { escapeHtml, watermark, youtubeEmbed } from '../utils.js';
+import { toast } from '../ui.js';
 
 export default async function lessonView(el, params) {
   const lectureId = params[0];
@@ -22,11 +22,30 @@ export default async function lessonView(el, params) {
         </div>
 
         <div class="space-y-8">
-          ${(lecture.videos||[]).map((v, i) => `
-            <div class="rounded-xl overflow-hidden bg-black shadow-2xl">
-              <div id="player-container-${i}" class="w-full aspect-video"></div>
-              <div class="p-4 bg-gray-900 flex justify-between items-center">
+          ${(lecture.videos||[]).map(v => `
+            <div class="rounded-xl overflow-hidden bg-black shadow-2xl relative group">
+              
+              <!-- مشغل الفيديو مع إخفاء الحواف -->
+              <div class="relative w-full aspect-video overflow-hidden bg-black">
+                <iframe 
+                  class="absolute w-[110%] h-[130%] -top-[15%] -left-[5%]" 
+                  src="${youtubeEmbed(v.url)}?controls=0&rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1" 
+                  frameborder="0" 
+                  allow="autoplay; encrypted-media" 
+                  allowfullscreen>
+                </iframe>
+                
+                <!-- طبقة فوق الفيديو عشان تمنع الدوس على يوتيوب وتظهر زرار التشغيل -->
+                <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+                   <div class="w-16 h-16 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center pointer-events-auto cursor-pointer hover:scale-110 transition">
+                     <i class="fa-solid fa-play text-white text-2xl pr-1"></i>
+                   </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-gray-900 flex justify-between items-center relative z-20">
                  <p class="font-bold text-white">${escapeHtml(v.title)}</p>
+                 <a target="_blank" href="${v.url}" class="text-xs text-gray-400 hover:text-white">مشاهدة على يوتيوب</a>
               </div>
             </div>
           `).join('')}
@@ -77,38 +96,8 @@ export default async function lessonView(el, params) {
     </div>
   `;
 
-  // إعدادات مشغل الفيديو (YouTube Iframe API)
-  if ((lecture.videos||[]).length > 0) {
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-
-    window.onYouTubeIframeAPIReady = () => {
-      (lecture.videos||[]).forEach((v, i) => {
-        const videoId = youtubeEmbed(v.url).split('/').pop();
-        if (!videoId) return;
-
-        new YT.Player(`player-container-${i}`, {
-          height: '100%',
-          width: '100%',
-          videoId: videoId,
-          playerVars: {
-            'controls': 0,           // إخفاء أزرار يوتيوب
-            'rel': 0,                // إخفاء الفيديوهات المقترحة
-            'modestbranding': 1,     // إخفاء اللوجو بأكبر قدر ممكن
-            'disablekb': 1,          // منع اختصارات الكيبورد
-            'showinfo': 0,
-            'iv_load_policy': 3      // إخفاء التعليقات التوضيحية
-          }
-        });
-      });
-    };
-  }
-
   if (p?.role === 'student') {
     const wrap = el.querySelector('#lesson-wrap');
     if (wrap) watermark(wrap, p.name + ' - ' + (p.phone||''));
   }
 }
-
-export async function openLectureEditor(lecture) { /* ... */ }

@@ -112,3 +112,8 @@ body {
 iframe#player-container-0, iframe[id^="player-container-"] {
   pointer-events: auto;
 }
+
+/* إخفاء حواف يوتيوب بالقص */
+.video-crop {
+  pointer-events: auto;
+}

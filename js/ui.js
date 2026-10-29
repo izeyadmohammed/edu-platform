@@ -46,6 +46,7 @@ export async function renderHeader() {
   const platformName = store.settings?.platform_name || 'منصة التعليم';
   const logoUrl = store.settings?.logo_url;
   const supportNum = store.settings?.support_whatsapp;
+  const devNum = store.settings?.developer_whatsapp;
 
   h.className = 'glass-header sticky top-0 z-[800]';
   h.innerHTML = `<div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -63,22 +64,28 @@ export async function renderHeader() {
       ${p && p.role === 'super_admin' ? `<a href="#/admin" class="hover:text-white transition text-purple-400">لوحة المالك</a>` : ''}
     </nav>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 md:gap-3">
       ${supportNum ? `
-        <a href="https://wa.me/${supportNum}" target="_blank" class="px-4 py-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 text-sm font-bold transition flex items-center gap-2">
-          <i class="fa-brands fa-whatsapp text-lg"></i> الدعم
+        <a href="https://wa.me/${supportNum}" target="_blank" class="px-3 py-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-lg"></i> <span class="hidden sm:inline">الدعم</span>
+        </a>
+      ` : ''}
+
+      ${devNum ? `
+        <a href="https://wa.me/${devNum}" target="_blank" class="px-3 py-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <i class="fa-solid fa-code text-lg"></i> <span class="hidden sm:inline">المطور</span>
         </a>
       ` : ''}
 
       ${p ? `
-        <a href="#/notifications" class="relative w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition">
-          <i class="fa-regular fa-bell text-gray-300"></i>
+        <a href="#/notifications" class="relative w-9 h-9 md:w-10 md:h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition">
+          <i class="fa-regular fa-bell text-gray-300 text-sm"></i>
           ${unread ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-gray-900">${unread}</span>` : ''}
         </a>
-        <button id="logout-btn" class="px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-bold transition">خروج</button>
+        <button id="logout-btn" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs md:text-sm font-bold transition">خروج</button>
       ` : `
-        <a href="#/login" class="px-5 py-2 rounded-lg text-white font-bold hover:text-blue-400 transition">دخول</a>
-        <a href="#/signup" class="btn-primary text-sm">حساب جديد</a>
+        <a href="#/login" class="px-3 md:px-5 py-2 rounded-lg text-white font-bold hover:text-blue-400 transition text-sm">دخول</a>
+        <a href="#/signup" class="btn-primary text-xs md:text-sm px-3 md:px-5">حساب جديد</a>
       `}
     </div>
   </div>`;

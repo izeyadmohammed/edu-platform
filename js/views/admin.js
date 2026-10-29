@@ -97,10 +97,14 @@ export default async function adminView(el) {
             </div>
           </div>
 
-          <h4 class="font-bold text-green-400 mt-6 mb-2">الدعم الفني</h4>
+          <h4 class="font-bold text-green-400 mt-6 mb-2">أرقام التواصل</h4>
           <div>
-            <label class="block text-sm font-bold mb-1">رقم الواتساب للدعم (بكود الدولة بدون +)</label>
-            <input id="support-whatsapp" value="${escapeHtml(s.support_whatsapp || '')}" placeholder="مثال: 201126346329" class="input-field" dir="ltr">
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للدعم</label>
+            <input id="support-whatsapp" value="${escapeHtml(s.support_whatsapp || '')}" placeholder="201126346329" class="input-field" dir="ltr">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">رقم الواتساب للمطور</label>
+            <input id="developer-whatsapp" value="${escapeHtml(s.developer_whatsapp || '')}" placeholder="201126346329" class="input-field" dir="ltr">
           </div>
 
           <h4 class="font-bold text-blue-400 mt-6 mb-2">روابط التواصل الاجتماعي</h4>
@@ -132,6 +136,7 @@ export default async function adminView(el) {
         platform_name: m.root.querySelector('#platform-name').value,
         logo_url: newLogoUrl,
         support_whatsapp: m.root.querySelector('#support-whatsapp').value,
+        developer_whatsapp: m.root.querySelector('#developer-whatsapp').value,
         facebook_url: m.root.querySelector('#url-facebook').value,
         whatsapp_url: m.root.querySelector('#url-whatsapp').value,
         telegram_url: m.root.querySelector('#url-telegram').value,

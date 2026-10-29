@@ -123,14 +123,18 @@ export default async function adminView(el) {
           const { error } = await supabase.from('profiles').update(updates).eq('id', s.id);
           if (error) throw new Error(error.message);
 
-          // تحديث كلمة المرور (لو المستخدم كتب واحدة جديدة)
+          // تحديث كلمة المرور عبر Edge Function
           if (newPass.length >= 6) {
-            // هنستخدم Edge Function أو الطريقة المباشرة (سوبابيز بتمنع تحديث باسورد غيره من المتصفح)
-            // الحل المؤقت: نبلغ المالك إن ده يحتاج سوبابيز
-            toast('تم تحديث البيانات. لتغيير كلمة المرور استخدم لوحة Supabase', 'warn');
-          } else {
-            toast('تم حفظ التعديلات', 'success');
+            const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/admin_update_user`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: s.id, new_password: newPass })
+            });
+              const err = await res.json();
+              throw new Error('فشل تغيير الباسورد: ' + (err.error || 'خطأ'));
+            }
           }
+          toast('تم حفظ التعديلات بنجاح', 'success');
           m.close(); location.reload();
         } catch (e) { toast(e.message, 'error'); }
       };

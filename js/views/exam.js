@@ -112,7 +112,7 @@ export default async function examView(el, params) {
     document.removeEventListener('visibilitychange', visibilityHandler);
 
     try {
-      const res = await fetch(`https://pephaughlzmtzphkt.supabase.co/functions/v1/submit_exam`, {
+      const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/submit_exam`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

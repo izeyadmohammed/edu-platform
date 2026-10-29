@@ -35,15 +35,7 @@ export default async function teacherView(el) {
 
   el.innerHTML = `
     <div class="flex items-center justify-between mb-6 animate-fade-up">
-      <div class="flex items-center gap-4">
-        <div class="relative w-14 h-14">
-          <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-primary/30">
-            ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-blue-500/20 text-blue-500 flex items-center justify-center text-xl font-black">${(p.name||'?').charAt(0)}</div>`}
-          </div>
-          <button id="upload-teacher-profile" class="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-[10px] border-2 border-white dark:border-gray-900"><i class="fa-solid fa-camera"></i></button>
-        </div>
-        <h1 class="text-3xl font-black text-main">لوحة <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">${p.role === 'assistant' ? 'المساعد' : 'المدرس'}</span></h1>
-      </div>
+      <h1 class="text-3xl font-black text-main">لوحة <span class="text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500">${p.role === 'assistant' ? 'المساعد' : 'المدرس'}</span></h1>
       <div class="flex gap-2">
         ${(p.role === 'teacher' || p.role === 'super_admin') ? `<button id="add-assistant" class="px-4 py-2 bg-purple-500/10 text-purple-500 rounded-lg text-sm font-bold border border-purple-500/20"><i class="fa-solid fa-user-plus mr-1"></i> إضافة مساعد</button>` : ''}
         <button id="add-course" class="btn-primary text-sm px-4 py-2"><i class="fa-solid fa-plus mr-2"></i> إضافة كورس</button>
@@ -110,23 +102,6 @@ export default async function teacherView(el) {
     </div>
   `;
 
-  // رفع صورة المدرس
-  el.querySelector('#upload-teacher-profile').onclick = () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file'; fileInput.accept = 'image/*';
-    fileInput.onchange = async (e) => {
-      const file = e.target.files[0];
-      toast('جاري رفع الصورة...', 'info');
-      const fileName = `profile_${p.id}_${Date.now()}.${file.name.split('.').pop()}`;
-      const { error } = await supabase.storage.from('images').upload(fileName, file);
-      if (error) { toast('فشل الرفع', 'error'); return; }
-      const { data } = supabase.storage.from('images').getPublicUrl(fileName);
-      await supabase.from('profiles').update({ image: data.publicUrl }).eq('id', p.id);
-      toast('تم تحديث الصورة', 'success'); location.reload();
-    };
-    fileInput.click();
-  };
-
   const aBtn = el.querySelector('#add-assistant');
   if (aBtn) {
     aBtn.onclick = () => {
@@ -146,9 +121,10 @@ export default async function teacherView(el) {
         const pass = m.root.querySelector('#a-pass').value;
         if (!name || !phone) { toast('الاسم والرقم مطلوبين', 'warn'); return; }
         try {
+          const { data: { session } } = await supabase.auth.getSession();
           const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/create_assistant`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
             body: JSON.stringify({ name, phone, password: pass, teacher_id: p.id })
           });
           const out = await res.json();

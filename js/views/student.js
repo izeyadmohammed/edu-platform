@@ -6,18 +6,12 @@ export default async function studentView(el) {
   const p = store.profile;
   if (!p) { el.innerHTML = `<p class="text-center">سجّل دخول</p>`; return; }
   
-  // جلب الإحصائيات
-  const { data: progress } = await supabase.from('student_progress').select('*').eq('student_id', p.id);
-  const { data: txs } = await supabase.from('transactions').select('*').eq('user_id', p.id).order('created_at', { ascending: false }).limit(20);
+  const { data: txs } = await supabase.from('transactions').select('*').eq('user_id', p.id).order('created_at', { ascending: false }).limit(10);
   const { data: subs } = await supabase.from('exam_submissions').select('*').eq('student_id', p.id).order('submitted_at', { ascending: false });
-
-  const videosCount = (progress || []).filter(x => x.video_watched).length;
-  const examsCount = (subs || []).filter(x => x.type === 'mcq').length;
-  const assignmentsCount = (subs || []).filter(x => x.type === 'essay').length;
 
   el.innerHTML = `
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-up">
-      <!-- بطاقة الطالب -->
+      <!-- كارت الطالب -->
       <div class="glass-card p-6 col-span-1 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
         <div class="relative z-10">
@@ -28,32 +22,14 @@ export default async function studentView(el) {
           <p class="text-sm text-gray-400 mb-1">${escapeHtml(p.phone||'')}</p>
           <p class="text-sm text-gray-400 mb-4">${escapeHtml(p.grade||'')}</p>
           
-          <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-            <p class="text-xs text-gray-400 mb-1">رصيد المحفظة</p>
+          <!-- المحفظة -->
+          <button id="wallet-btn" class="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 p-4 rounded-xl transition text-right group">
+            <p class="text-xs text-green-400 mb-1 flex justify-between items-center">
+              <span>رصيد المحفظة</span>
+              <i class="fa-solid fa-plus bg-green-500/20 w-6 h-6 rounded-full flex items-center justify-center text-xs group-hover:scale-110 transition"></i>
+            </p>
             <p class="text-3xl font-black text-green-400">${formatMoney(p.wallet)}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- إحصائيات التقدم -->
-      <div class="glass-card p-6 col-span-2">
-        <h3 class="font-bold text-lg mb-4">تقدمي الدراسي</h3>
-        <div class="grid grid-cols-3 gap-3 text-center">
-          <div class="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
-            <i class="fa-solid fa-book-open text-2xl text-blue-400 mb-2"></i>
-            <p class="text-2xl font-black text-white">${(p.enrolled_courses||[]).length}</p>
-            <p class="text-xs text-gray-400 font-bold">كورس مشترك</p>
-          </div>
-          <div class="bg-green-500/10 p-4 rounded-xl border border-green-500/20">
-            <i class="fa-solid fa-video text-2xl text-green-400 mb-2"></i>
-            <p class="text-2xl font-black text-white">${videosCount}</p>
-            <p class="text-xs text-gray-400 font-bold">فيديو تمت مشاهدته</p>
-          </div>
-          <div class="bg-purple-500/10 p-4 rounded-xl border border-purple-500/20">
-            <i class="fa-solid fa-list-check text-2xl text-purple-400 mb-2"></i>
-            <p class="text-2xl font-black text-white">${examsCount}</p>
-            <p class="text-xs text-gray-400 font-bold">امتحان تم حله</p>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -61,17 +37,17 @@ export default async function studentView(el) {
       <div class="glass-card p-6 col-span-2">
         <h3 class="font-bold text-lg mb-4">أدوات سريعة</h3>
         <div class="grid grid-cols-2 gap-3">
-          <button id="charge" class="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition text-right font-bold">
-            <i class="fa-solid fa-wallet text-xl"></i> شحن المحفظة
-          </button>
           <a href="#/courses" class="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition font-bold">
             <i class="fa-solid fa-book text-xl"></i> كورساتي
           </a>
+          <button id="pw" class="flex items-center gap-3 p-4 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 transition text-right font-bold">
+            <i class="fa-solid fa-key text-xl"></i> تغيير كلمة المرور
+          </button>
         </div>
       </div>
 
-      <!-- المعاملات والدرجات -->
-      <div class="glass-card p-6 col-span-1">
+      <!-- المعاملات -->
+      <div class="glass-card p-6">
         <h3 class="font-bold text-lg mb-4">آخر المعاملات</h3>
         ${(txs||[]).length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">لا توجد معاملات</p>' : `
           <div class="space-y-2">
@@ -90,8 +66,9 @@ export default async function studentView(el) {
         `}
       </div>
 
+      <!-- الدرجات -->
       <div class="glass-card p-6 col-span-2">
-        <h3 class="font-bold text-lg mb-4">سجل الدرجات والواجبات</h3>
+        <h3 class="font-bold text-lg mb-4">سجل الدرجات</h3>
         ${(subs||[]).length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">لا توجد درجات</p>' : `
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             ${subs.map(s => `
@@ -112,5 +89,57 @@ export default async function studentView(el) {
     </div>
   `;
 
-  // ... (زرار الشحن وتغيير الباسورد - نفس الكود القديم)
+  // فتح المحفظة (كود الشحن)
+  el.querySelector('#wallet-btn').onclick = () => {
+    const m = modal({ 
+      title: 'شحن المحفظة', 
+      body: `<input id="code-inp" class="input-field text-center text-lg font-mono" placeholder="أدخل كود الشحن هنا" dir="ltr">`, 
+      actions: `<button id="cbtn" class="btn-accent w-full">شحن الآن</button>` 
+    });
+    m.root.querySelector('#cbtn').onclick = async () => {
+      const code = m.root.querySelector('#code-inp').value.trim();
+      if (!code) return;
+      try { 
+        const { error } = await supabase.rpc('redeem_code', { code_input: code }); 
+        if (error) throw new Error(error.message); 
+        toast('تم الشحن بنجاح', 'success'); m.close(); 
+        const { loadProfile } = await import('../auth.js'); await loadProfile(); 
+        location.reload(); 
+      } catch (e) { toast(e.message, 'error'); }
+    };
+  };
+
+  // تغيير الباسورد (بالتحقق من القديم)
+  el.querySelector('#pw').onclick = () => {
+    const m = modal({ 
+      title: 'تغيير كلمة المرور', 
+      body: `
+        <div class="space-y-3">
+          <input id="old-pw" type="password" placeholder="كلمة المرور الحالية" class="input-field">
+          <input id="new-pw" type="password" placeholder="كلمة المرور الجديدة (8 أحرف على الأقل)" class="input-field">
+        </div>`, 
+      actions: `<button id="sbtn" class="btn-primary w-full">تغيير</button>` 
+    });
+    
+    m.root.querySelector('#sbtn').onclick = async () => {
+      const oldPw = m.root.querySelector('#old-pw').value;
+      const newPw = m.root.querySelector('#new-pw').value;
+      
+      if (!oldPw) { toast('اكتب كلمة المرور الحالية', 'warn'); return; }
+      if (newPw.length < 8) { toast('كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل', 'warn'); return; }
+      
+      try {
+        const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/change_own_password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: store.profile.id, old_password: oldPw, new_password: newPw })
+        });
+        const out = await res.json();
+        if (!res.ok) throw new Error(out.error || 'فشل التغيير');
+        
+        toast('تم تغيير كلمة المرور بنجاح', 'success');
+        m.close();
+      } catch (e) { toast(e.message, 'error'); }
+    };
+  };
 }

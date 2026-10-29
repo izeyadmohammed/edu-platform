@@ -38,7 +38,7 @@ function renderSignup(el) {
       <select name="grade" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
         <option value="">اختر الصف</option><option>الأول الثانوي</option><option>الثاني الثانوي</option><option>الثالث الثانوي</option><option>الأول الإعدادي</option><option>الثاني الإعدادي</option><option>الثالث الإعدادي</option>
       </select>
-      <input name="password" required type="password" minlength="6" placeholder="كلمة المرور" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
+      <input name="password" required type="password" minlength="8" placeholder="كلمة المرور" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900">
       <button class="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg">تسجيل</button>
       <a href="#/login" class="block text-center text-sm text-blue-600 hover:underline">لدي حساب بالفعل</a>
     </form></div>`;

@@ -7,6 +7,8 @@ async function boot() {
   initDark();
   renderFooter();
   await bootstrapAuth();
+  const { getSettings } = await import('./ui.js');
+  await getSettings();
   await renderHeader();
   
   supabase.channel('global')

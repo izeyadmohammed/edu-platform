@@ -289,6 +289,24 @@ async function openSettingsModal() {
           <label class="block text-sm font-bold mb-1 text-main">اسم المنصة</label>
           <input id="platform-name" value="${escapeHtml(s?.platform_name || '')}" class="input-field">
         </div>
+        
+        <h4 class="font-bold text-purple-500 mt-6 mb-2">الصفحة الرئيسية</h4>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">العنوان الرئيسي (Hero Title)</label>
+          <input id="hero-title" value="${escapeHtml(s?.hero_title || '')}" class="input-field">
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">الوصف (Hero Subtitle)</label>
+          <textarea id="hero-subtitle" class="input-field">${escapeHtml(s?.hero_subtitle || '')}</textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">نص زرار 1</label>
+          <input id="hero-btn1" value="${escapeHtml(s?.hero_btn1 || '')}" class="input-field">
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">نص زرار 2</label>
+          <input id="hero-btn2" value="${escapeHtml(s?.hero_btn2 || '')}" class="input-field">
+        </div>
         <div>
           <label class="block text-sm font-bold mb-1 text-main">لوجو المنصة</label>
           <div class="flex items-center gap-3">

@@ -17,6 +17,11 @@ export default async function adminView(el) {
 // ==========================================
 async function renderDashboard(el) {
   const { data: profiles } = await supabase.from('profiles').select('*');
+  
+  // جلب إجمالي المبيعات (اشتراكات) وإجمالي الشحن
+  const { data: transactions } = await supabase.from('transactions').select('*');
+  const totalRevenue = (transactions || []).filter(t => t.type === 'debit' && t.note.includes('اشتراك')).reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalCredits = (transactions || []).filter(t => t.type === 'credit').reduce((sum, t) => sum + Number(t.amount), 0);
   const students = (profiles || []).filter(p => p.role === 'student');
   const teachers = (profiles || []).filter(p => p.role === 'teacher' || p.role === 'assistant');
   const totalWallet = students.reduce((s, p) => s + (+p.wallet || 0), 0);
@@ -27,11 +32,33 @@ async function renderDashboard(el) {
       <button id="settings-btn" class="btn-primary text-sm"><i class="fa-solid fa-gear mr-2"></i> الإعدادات</button>
     </div>
     
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fade-up">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 animate-fade-up">
       ${statCard('fa-users', 'الطلاب', students.length, 'text-blue-500')}
       ${statCard('fa-user-tie', 'المدرسون', teachers.length, 'text-green-500')}
       ${statCard('fa-book', 'الكورسات', store.courses.length, 'text-purple-500')}
       ${statCard('fa-wallet', 'إجمالي المحافظ', formatMoney(totalWallet), 'text-orange-500')}
+      ${statCard('fa-chart-line', 'إجمالي الأرباح', formatMoney(totalRevenue), 'text-emerald-500')}
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 animate-fade-up">
+      <div class="glass-card p-6 flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+          <i class="fa-solid fa-money-bill-trend-up text-3xl text-emerald-500"></i>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-muted">إجمالي المبيعات (الاشتراكات)</p>
+          <p class="text-3xl font-black text-emerald-500">${formatMoney(totalRevenue)}</p>
+        </div>
+      </div>
+      <div class="glass-card p-6 flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+          <i class="fa-solid fa-arrow-down text-3xl text-blue-500"></i>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-muted">إجمالي الشحن (الأكواد)</p>
+          <p class="text-3xl font-black text-blue-500">${formatMoney(totalCredits)}</p>
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up">

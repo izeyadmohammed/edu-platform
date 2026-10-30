@@ -1,4 +1,22 @@
 import { supabase, store, loadAllData } from './config.js';
+
+// تسجيل Service Worker للتحديث التلقائي
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('SW registered:', reg);
+        // فحص التحديثات كل 30 ثانية
+        setInterval(() => reg.update(), 30000);
+      })
+      .catch(err => console.log('SW registration failed:', err));
+  });
+  
+  // لما الـ Service Worker الجديد يشتغل، اعمل Refresh للصفحة
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
 import { bootstrapAuth } from './auth.js';
 import { renderHeader, renderFooter, initDark } from './ui.js';
 import { route } from './router.js';

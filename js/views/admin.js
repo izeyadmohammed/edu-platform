@@ -376,6 +376,8 @@ async function openSettingsModal() {
       show_instagram: m.root.querySelector('#show-instagram').checked,
       show_tiktok: m.root.querySelector('#show-tiktok').checked,
     };
+    updates.contact_email = m.root.querySelector('#contact-email').value;
+    updates.contact_phone = m.root.querySelector('#contact-phone').value;
     const { data: updated, error } = await supabase.from('settings').upsert({ id: 1, ...updates }).select();
     if (error) { toast(error.message, 'error'); return; }
     

@@ -387,6 +387,7 @@ async function openSettingsModal() {
     await renderFooter();
     
     toast('تم الحفظ بنجاح', 'success'); m.close();
+    setTimeout(() => window.location.reload(), 500);
   };
 }
 

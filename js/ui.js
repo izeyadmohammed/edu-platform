@@ -154,8 +154,8 @@ export async function renderFooter() {
             ${s.platform_name || 'منصة التعليم'}
           </div>
           <div class="flex flex-col gap-2 text-sm text-muted items-center md:items-start">
-            ${s.contact_email && s.contact_email !== 'your-email@example.com' ? `<p><i class="fa-solid fa-envelope ml-2 text-blue-500"></i> ${s.contact_email}</p>` : ''}
-            ${s.contact_phone && s.contact_phone !== '01000000000' ? `<p dir="ltr"><i class="fa-solid fa-phone ml-2 text-green-500"></i> ${s.contact_phone}</p>` : ''}
+            ${s.contact_email ? `<p><i class="fa-solid fa-envelope ml-2 text-blue-500"></i> ${s.contact_email}</p>` : ''}
+            ${s.contact_phone ? `<p dir="ltr"><i class="fa-solid fa-phone ml-2 text-green-500"></i> ${s.contact_phone}</p>` : ''}
           </div>
         </div>
 

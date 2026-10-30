@@ -110,6 +110,11 @@ export default async function lessonView(el, params) {
 
 
 // دالة تعديل المحاضرة
+
+
+// ==========================================
+// دالة تعديل المحاضرة (النسخة المطورة)
+// ==========================================
 export async function openLectureEditor(lecture) {
   const local = JSON.parse(JSON.stringify({ 
     videos: lecture.videos || [], 
@@ -117,6 +122,15 @@ export async function openLectureEditor(lecture) {
     mcq_exams: lecture.mcq_exams || [], 
     essay_exams: lecture.essay_exams || [] 
   }));
+
+  // دالة مساعدة لرفع الصور
+  async function uploadImage(file) {
+    const fileName = `q_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`;
+    const { error } = await supabase.storage.from('images').upload(fileName, file);
+    if (error) throw new Error('فشل رفع الصورة');
+    const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+    return data.publicUrl;
+  }
 
   const m = modal({ 
     title: 'تعديل محتوى المحاضرة', 
@@ -128,7 +142,7 @@ export async function openLectureEditor(lecture) {
         <button data-tab="essay" class="tab-btn px-4 py-2 rounded-lg bg-black/5 dark:bg-white/5 text-muted text-sm font-bold whitespace-nowrap">واجبات</button>
       </div>
       <div id="tab-content"></div>`,
-    actions: `<button id="cancel" class="px-4 py-2 bg-black/5 dark:bg-white/5 rounded-lg font-bold text-main">إلغاء</button><button id="save" class="btn-primary">حفظ</button>` 
+    actions: `<button id="cancel" class="px-4 py-2 bg-black/5 dark:bg-white/5 rounded-lg font-bold text-main">إلغاء</button><button id="save" class="btn-primary">حفظ التغييرات</button>` 
   });
   
   const content = m.root.querySelector('#tab-content');
@@ -168,16 +182,24 @@ export async function openLectureEditor(lecture) {
             </div>
             ${(ex.questions||[]).map((q, qi) => `
               <div class="bg-black/5 dark:bg-black/20 p-3 rounded-lg mb-3">
-                <div class="flex gap-2 mb-2">
+                <div class="flex gap-2 mb-2 items-start">
                   <input data-exam="${ei}" data-q="${qi}" data-f="questionText" value="${escapeHtml(q.questionText)}" placeholder="نص السؤال" class="input-field text-sm flex-1">
+                  <label class="cursor-pointer bg-blue-500/10 text-blue-500 rounded px-3 py-2 text-sm flex items-center gap-2 shrink-0">
+                    <i class="fa-solid fa-image"></i> صورة
+                    <input type="file" class="hidden" data-img-exam="${ei}" data-img-q="${qi}" accept="image/*">
+                  </label>
                 </div>
+                ${q.image ? `<img src="${q.image}" class="h-16 rounded mb-2 border border-border object-contain">` : ''}
                 ${(q.options||[]).map((o, oi) => `
                   <div class="flex gap-2 items-center mb-2">
                     <input type="radio" name="correct_${ei}_${qi}" ${q.correctIndex===oi?'checked':''} data-exam="${ei}" data-q="${qi}" data-correct="${oi}" class="accent-blue-500">
                     <input data-exam="${ei}" data-q="${qi}" data-opt="${oi}" value="${escapeHtml(o.text)}" placeholder="خيار" class="input-field text-sm">
                     <button data-del-opt="${ei}_${qi}_${oi}" class="text-red-500">✕</button>
                   </div>`).join('')}
-                <button data-add-opt="${ei}_${qi}" class="text-blue-500 text-xs font-bold">+ خيار</button>
+                <div class="flex gap-2 mt-1">
+                  <button data-add-opt="${ei}_${qi}" class="text-blue-500 text-xs font-bold">+ خيار</button>
+                  <button data-copy-q="${ei}_${qi}" class="text-green-500 text-xs font-bold">📋 نسخ السؤال</button>
+                </div>
               </div>
             `).join('')}
             <button data-add-q="${ei}" class="text-blue-500 text-xs font-bold mt-1">+ سؤال</button>
@@ -200,6 +222,33 @@ export async function openLectureEditor(lecture) {
   }
 
   function bindTabEvents() {
+    // رفع الصور
+    content.querySelectorAll('input[type="file"]').forEach(inp => {
+      inp.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        toast('جاري رفع الصورة...', 'info');
+        try {
+          const url = await uploadImage(file);
+          const ei = +inp.dataset.imgExam, qi = +inp.dataset.imgQ;
+          local.mcq_exams[ei].questions[qi].image = url;
+          toast('تم الرفع', 'success');
+          renderTab();
+        } catch(err) { toast(err.message, 'error'); }
+      };
+    });
+    
+    // نسخ سؤال
+    content.querySelectorAll('[data-copy-q]').forEach(b => {
+      b.onclick = () => {
+        const [ei, qi] = b.dataset.copyQ.split('_').map(Number);
+        const q = JSON.parse(JSON.stringify(local.mcq_exams[ei].questions[qi]));
+        local.mcq_exams[ei].questions.push(q);
+        renderTab();
+      };
+    });
+    
+    // تعديل الحقول
     content.querySelectorAll('[data-f]').forEach(inp => { 
       inp.oninput = () => {
         const ei = inp.dataset.exam, qi = inp.dataset.q, i = inp.dataset.i, f = inp.dataset.f;
@@ -208,6 +257,7 @@ export async function openLectureEditor(lecture) {
         else if (i !== undefined) local[currentTab === 'videos' ? 'videos' : 'pdfs'][+i][f] = inp.value;
       };
     });
+    
     content.querySelectorAll('[data-opt]').forEach(inp => { inp.oninput = () => { local.mcq_exams[+inp.dataset.exam].questions[+inp.dataset.q].options[+inp.dataset.opt].text = inp.value; }; });
     content.querySelectorAll('[data-correct]').forEach(r => { r.onchange = () => { local.mcq_exams[+r.dataset.exam].questions[+r.dataset.q].correctIndex = +r.dataset.correct; }; });
     content.querySelectorAll('[data-del]').forEach(b => { b.onclick = () => { const t = b.dataset.del, i = +b.dataset.i; if (t === 'videos') local.videos.splice(i,1); if (t === 'pdfs') local.pdfs.splice(i,1); if (t === 'mcq') local.mcq_exams.splice(i,1); if (t === 'essay') local.essay_exams.splice(i,1); renderTab(); }; });
@@ -239,7 +289,7 @@ export async function openLectureEditor(lecture) {
         essay_exams: local.essay_exams 
       }).eq('id', lecture.id);
       if (error) throw new Error(error.message);
-      toast('تم الحفظ', 'success'); m.close(); await refreshLectures(); location.reload();
+      toast('تم الحفظ بنجاح', 'success'); m.close(); await refreshLectures(); location.reload();
     } catch (e) { toast(e.message, 'error'); }
   };
 }

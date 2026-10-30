@@ -115,6 +115,11 @@ export default async function lessonView(el, params) {
 // ==========================================
 // دالة تعديل المحاضرة (النسخة المطورة)
 // ==========================================
+
+
+// ==========================================
+// محرر المحاضرة (النسخة النهائية مع زر رفع الصور)
+// ==========================================
 export async function openLectureEditor(lecture) {
   const local = JSON.parse(JSON.stringify({ 
     videos: lecture.videos || [], 
@@ -122,15 +127,6 @@ export async function openLectureEditor(lecture) {
     mcq_exams: lecture.mcq_exams || [], 
     essay_exams: lecture.essay_exams || [] 
   }));
-
-  // دالة مساعدة لرفع الصور
-  async function uploadImage(file) {
-    const fileName = `q_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`;
-    const { error } = await supabase.storage.from('images').upload(fileName, file);
-    if (error) throw new Error('فشل رفع الصورة');
-    const { data } = supabase.storage.from('images').getPublicUrl(fileName);
-    return data.publicUrl;
-  }
 
   const m = modal({ 
     title: 'تعديل محتوى المحاضرة', 
@@ -184,8 +180,8 @@ export async function openLectureEditor(lecture) {
               <div class="bg-black/5 dark:bg-black/20 p-3 rounded-lg mb-3">
                 <div class="flex gap-2 mb-2 items-start">
                   <input data-exam="${ei}" data-q="${qi}" data-f="questionText" value="${escapeHtml(q.questionText)}" placeholder="نص السؤال" class="input-field text-sm flex-1">
-                  <label class="cursor-pointer bg-blue-500/10 text-blue-500 rounded px-3 py-2 text-sm flex items-center gap-2 shrink-0">
-                    <i class="fa-solid fa-image"></i> صورة
+                  <label class="cursor-pointer bg-blue-500/10 text-blue-500 rounded px-3 py-2 text-sm flex items-center gap-1 shrink-0" title="رفع صورة للسؤال">
+                    <i class="fa-solid fa-image"></i>
                     <input type="file" class="hidden" data-img-exam="${ei}" data-img-q="${qi}" accept="image/*">
                   </label>
                 </div>
@@ -228,13 +224,15 @@ export async function openLectureEditor(lecture) {
         const file = e.target.files[0];
         if (!file) return;
         toast('جاري رفع الصورة...', 'info');
-        try {
-          const url = await uploadImage(file);
-          const ei = +inp.dataset.imgExam, qi = +inp.dataset.imgQ;
-          local.mcq_exams[ei].questions[qi].image = url;
-          toast('تم الرفع', 'success');
-          renderTab();
-        } catch(err) { toast(err.message, 'error'); }
+        const fileName = `q_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`;
+        const { error } = await supabase.storage.from('images').upload(fileName, file);
+        if (error) { toast('فشل الرفع', 'error'); return; }
+        const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+        const ei = +inp.dataset.imgExam;
+        const qi = +inp.dataset.imgQ;
+        local.mcq_exams[ei].questions[qi].image = data.publicUrl;
+        toast('تم الرفع', 'success');
+        renderTab();
       };
     });
     
@@ -247,8 +245,7 @@ export async function openLectureEditor(lecture) {
         renderTab();
       };
     });
-    
-    // تعديل الحقول
+
     content.querySelectorAll('[data-f]').forEach(inp => { 
       inp.oninput = () => {
         const ei = inp.dataset.exam, qi = inp.dataset.q, i = inp.dataset.i, f = inp.dataset.f;

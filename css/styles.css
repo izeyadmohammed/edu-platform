@@ -1,22 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 
 :root {
+  /* الوضع النهاري (الافتراضي) */
+  --bg-main: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --primary: #3B82F6;
+  --accent: #10B981;
+  --border: #E2E8F0;
+}
+
+.dark {
+  /* الوضع الليلي */
   --bg-main: #0B1120;
   --bg-card: rgba(30, 41, 59, 0.7);
   --text-main: #F8FAFC;
   --text-muted: #94A3B8;
-  --primary: #3B82F6;
-  --accent: #10B981;
   --border: rgba(255, 255, 255, 0.08);
 }
 
 body {
   font-family: 'Cairo', sans-serif;
   background-color: var(--bg-main);
-  background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                    radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.1), transparent 25%);
   color: var(--text-main);
   min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* الكروت */
@@ -26,20 +35,26 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 1rem;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.dark .glass-card {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 .glass-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 40px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 10px 40px rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.3);
 }
 
 /* الهيدر */
 .glass-header {
-  background: rgba(11, 17, 32, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
+}
+.dark .glass-header {
+  background: rgba(11, 17, 32, 0.85);
 }
 
 /* الأزرار */
@@ -67,9 +82,9 @@ body {
 /* حقول الإدخال */
 .input-field {
   width: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
@@ -94,10 +109,14 @@ body {
 }
 .watermark-item {
   position: absolute; font-size: 20px; font-weight: 900;
-  color: rgba(255, 255, 255, 0.25);
-  text-shadow: 0 0 4px rgba(0,0,0,0.5);
+  color: rgba(0, 0, 0, 0.1); 
+  text-shadow: 0 0 4px rgba(255,255,255,0.5);
   white-space: nowrap; user-select: none;
   animation: float 25s linear infinite;
+}
+.dark .watermark-item {
+  color: rgba(255, 255, 255, 0.25);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 @keyframes float {
   0% { transform: translate(0, 0) rotate(-15deg); }
@@ -110,5 +129,5 @@ body {
 /* شريط التمرير */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #475569; }
+::-webkit-scrollbar-thumb { background: #94A3B8; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #64748B; }

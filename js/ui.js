@@ -130,9 +130,25 @@ export async function renderFooter() {
   if (!f) return;
   if (!store.settings) await getSettings();
   const s = store.settings || {};
+  
+  const socials = [
+    { key: 'facebook', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
+    { key: 'whatsapp', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
+    { key: 'telegram', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s.telegram_url, show: s.show_telegram },
+    { key: 'instagram', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s.instagram_url, show: s.show_instagram },
+    { key: 'tiktok', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
+  ].filter(x => x.show && x.url);
+
   f.className = 'border-t border-border py-8 mt-12 bg-black/5 dark:bg-black/20';
   f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted">
     <div class="flex items-center gap-2 font-bold text-main"><i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}</div>
+    
+    ${socials.length ? `
+      <div class="flex gap-4 text-xl">
+        ${socials.map(x => `<a href="${x.url}" target="_blank" class="text-muted ${x.color} transition"><i class="fa-brands ${x.icon}"></i></a>`).join('')}
+      </div>
+    ` : ''}
+
     <div class="flex gap-4 font-bold text-xs">
       <a href="#/policy/terms" class="hover:text-primary transition">شروط الاستخدام</a>
       <a href="#/policy/privacy" class="hover:text-primary transition">سياسة الخصوصية</a>

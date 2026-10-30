@@ -360,69 +360,21 @@ async function openSettingsModal() {
   };
 
   m.root.querySelector('#save-settings').onclick = async () => {
-      try {
-        // قراءة القيم مباشرة من الحقول في لحظة الحفظ
-        const newPlatformName = m.root.querySelector('#platform-name')?.value?.trim() || '';
-        const newContactEmail = m.root.querySelector('#contact-email')?.value?.trim() || '';
-        const newContactPhone = m.root.querySelector('#contact-phone')?.value?.trim() || '';
-        const newSupportWhatsapp = m.root.querySelector('#support-whatsapp')?.value?.trim() || '';
-        const newDeveloperWhatsapp = m.root.querySelector('#developer-whatsapp')?.value?.trim() || '';
-        const newFacebookUrl = m.root.querySelector('#url-facebook')?.value?.trim() || '';
-        const newWhatsappUrl = m.root.querySelector('#url-whatsapp')?.value?.trim() || '';
-        const newTelegramUrl = m.root.querySelector('#url-telegram')?.value?.trim() || '';
-        const newInstagramUrl = m.root.querySelector('#url-instagram')?.value?.trim() || '';
-        const newTiktokUrl = m.root.querySelector('#url-tiktok')?.value?.trim() || '';
-        const newHeroTitle = m.root.querySelector('#hero-title')?.value?.trim() || '';
-        const newHeroSubtitle = m.root.querySelector('#hero-subtitle')?.value?.trim() || '';
-        const newHeroBtn1 = m.root.querySelector('#hero-btn1')?.value?.trim() || '';
-        const newHeroBtn2 = m.root.querySelector('#hero-btn2')?.value?.trim() || '';
-        
-        // تجهيز البيانات
-        const updates = {
-          platform_name: newPlatformName,
-          contact_email: newContactEmail,
-          contact_phone: newContactPhone,
-          support_whatsapp: newSupportWhatsapp,
-          developer_whatsapp: newDeveloperWhatsapp,
-          facebook_url: newFacebookUrl,
-          whatsapp_url: newWhatsappUrl,
-          telegram_url: newTelegramUrl,
-          instagram_url: newInstagramUrl,
-          tiktok_url: newTiktokUrl,
-          hero_title: newHeroTitle,
-          hero_subtitle: newHeroSubtitle,
-          hero_btn1: newHeroBtn1,
-          hero_btn2: newHeroBtn2,
-          logo_url: newLogoUrl
-        };
-        
-        console.log('Saving settings:', updates);
-        
-        // إرسال البيانات لسوبابيز
-        const { data, error } = await supabase.from('settings').upsert({ id: 1, ...updates }).select();
-        
-        if (error) {
-          console.error('Save error:', error);
-          toast('فشل الحفظ: ' + error.message, 'error');
-          return;
-        }
-        
-        if (!data || data.length === 0) {
-          console.error('No data returned');
-          toast('لم يتم الحفظ - تحقق من الصلاحيات', 'error');
-          return;
-        }
-        
-        toast('تم الحفظ بنجاح', 'success');
-        m.close();
-        
-        // انتظر ثانية وجدد الصفحة
-        setTimeout(() => window.location.reload(), 800);
-        
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        toast('حدث خطأ: ' + err.message, 'error');
-      }
+    const updates = {
+      platform_name: m.root.querySelector('#platform-name').value,
+      logo_url: newLogoUrl,
+      support_whatsapp: m.root.querySelector('#support-whatsapp').value,
+      developer_whatsapp: m.root.querySelector('#developer-whatsapp').value,
+      facebook_url: m.root.querySelector('#url-facebook').value,
+      whatsapp_url: m.root.querySelector('#url-whatsapp').value,
+      telegram_url: m.root.querySelector('#url-telegram').value,
+      instagram_url: m.root.querySelector('#url-instagram').value,
+      tiktok_url: m.root.querySelector('#url-tiktok').value,
+      show_facebook: m.root.querySelector('#show-facebook').checked,
+      show_whatsapp: m.root.querySelector('#show-whatsapp').checked,
+      show_telegram: m.root.querySelector('#show-telegram').checked,
+      show_instagram: m.root.querySelector('#show-instagram').checked,
+      show_tiktok: m.root.querySelector('#show-tiktok').checked,
     };
     const { data: updated, error } = await supabase.from('settings').upsert({ id: 1, ...updates }).select();
     if (error) { toast(error.message, 'error'); return; }

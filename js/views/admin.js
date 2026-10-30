@@ -378,7 +378,14 @@ async function openSettingsModal() {
     };
     const { error } = await supabase.from('settings').update(updates).eq('id', 1);
     if (error) { toast(error.message, 'error'); return; }
-    toast('تم الحفظ', 'success'); m.close(); location.reload();
+    
+    // تحديث الإعدادات في الذاكرة
+    const { getSettings, renderHeader, renderFooter } = await import('../ui.js');
+    await getSettings(true);
+    await renderHeader();
+    await renderFooter();
+    
+    toast('تم الحفظ', 'success'); m.close();
   };
 }
 

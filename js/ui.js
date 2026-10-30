@@ -14,13 +14,16 @@ export function toggleDark() {
   localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
 }
 
-export async function getSettings() {
-  const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
-  if (data) {
+export async function getSettings(force = false) {
+  if (store.settings && !force) return store.settings;
+  const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
+  if (!error && data) {
     store.settings = data;
     const titleEl = document.getElementById('page-title');
     if (titleEl) titleEl.textContent = data.platform_name || 'منصة التعليم';
+    return data;
   }
+  return null;
 }
 
 export function toast(msg, type = 'info') {

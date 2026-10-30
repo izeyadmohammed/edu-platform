@@ -142,10 +142,10 @@ export async function renderFooter() {
   f.className = 'border-t border-border py-12 mt-16 bg-black/5 dark:bg-[#0B1120]';
   f.innerHTML = `
     <div class="container mx-auto px-6 max-w-7xl">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 text-center md:text-right">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-12 text-center md:text-right">
         
-        <!-- العمود الأول: الشعار + بيانات التواصل -->
-        <div class="col-span-1 md:col-span-2 space-y-4">
+        <!-- 1. الشعار وبيانات التواصل -->
+        <div class="space-y-4">
           <div class="flex items-center justify-center md:justify-start gap-2 font-black text-2xl text-main">
             ${s.logo_url ? `<img src="${s.logo_url}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
             ${s.platform_name || 'منصة التعليم'}
@@ -156,7 +156,7 @@ export async function renderFooter() {
           </div>
         </div>
 
-        <!-- العمود الثاني: الصفحات -->
+        <!-- 2. الصفحات -->
         <div class="space-y-3 flex flex-col items-center md:items-start">
           <a href="#/home" class="text-sm text-muted hover:text-primary transition">الرئيسية</a>
           <a href="#/courses" class="text-sm text-muted hover:text-primary transition">الكورسات</a>
@@ -164,27 +164,24 @@ export async function renderFooter() {
           <a href="#/signup" class="text-sm text-muted hover:text-primary transition">انضم إلينا</a>
         </div>
 
-        <!-- العمود الثالث: القانوني + السوشيال -->
-        <div class="space-y-6 flex flex-col items-center md:items-start">
-          <div class="space-y-3 flex flex-col items-center md:items-start">
-            <a href="#/policy/terms" class="text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
-            <a href="#/policy/privacy" class="text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
-            <a href="#/policy/refund" class="text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
-          </div>
-          
-          ${socials.length ? `
-            <div class="space-y-2 flex flex-col items-center md:items-start">
-              ${socials.map(x => `
-                <a href="${x.url}" target="_blank" class="flex items-center gap-2 text-sm text-muted ${x.color} transition">
-                  <i class="fa-brands ${x.icon}"></i> ${x.name}
-                </a>
-              `).join('')}
-            </div>
-          ` : ''}
+        <!-- 3. الروابط القانونية -->
+        <div class="space-y-3 flex flex-col items-center md:items-start">
+          <a href="#/policy/terms" class="text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
+          <a href="#/policy/privacy" class="text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
+          <a href="#/policy/refund" class="text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
+        </div>
+
+        <!-- 4. السوشيال ميديا -->
+        <div class="space-y-3 flex flex-col items-center md:items-start">
+          ${socials.length ? socials.map(x => `
+            <a href="${x.url}" target="_blank" class="flex items-center gap-2 text-sm text-muted ${x.color} transition">
+              <i class="fa-brands ${x.icon}"></i> ${x.name}
+            </a>
+          `).join('') : '<p class="text-sm text-muted">لا توجد روابط</p>'}
         </div>
       </div>
 
-      <!-- الحقوق في النص -->
+      <!-- الحقوق -->
       <div class="pt-6 border-t border-border text-center text-xs text-muted">
         <p>&copy; ${new Date().getFullYear()} ${s.platform_name || 'منصة التعليم'}. جميع الحقوق محفوظة.</p>
       </div>

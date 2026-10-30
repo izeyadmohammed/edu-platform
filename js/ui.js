@@ -131,7 +131,6 @@ export async function renderFooter() {
   if (!store.settings) await getSettings();
   const s = store.settings || {};
   
-  // تجهيز السوشيال ميديا
   const socials = [
     { key: 'facebook', name: 'فيسبوك', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
     { key: 'whatsapp', name: 'واتساب', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
@@ -143,52 +142,49 @@ export async function renderFooter() {
   f.className = 'border-t border-border py-12 mt-16 bg-black/5 dark:bg-[#0B1120]';
   f.innerHTML = `
     <div class="container mx-auto px-6 max-w-7xl">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 text-center md:text-right">
         
-        <!-- العمود الأول: الشعار والوصف -->
+        <!-- العمود الأول: الشعار + بيانات التواصل -->
         <div class="col-span-1 md:col-span-2 space-y-4">
-          <div class="flex items-center gap-2 font-black text-2xl text-main">
+          <div class="flex items-center justify-center md:justify-start gap-2 font-black text-2xl text-main">
             ${s.logo_url ? `<img src="${s.logo_url}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
             ${s.platform_name || 'منصة التعليم'}
           </div>
-          <p class="text-sm text-muted leading-relaxed max-w-md">
-            ${s.hero_subtitle || 'منصة تعليمية متكاملة تهدف لتمكين الطلاب من خلال محتوى تعليمي عالي الجودة وأدوات تفاعلية.'}
-          </p>
+          <div class="flex flex-col gap-2 text-sm text-muted items-center md:items-start">
+            ${s.contact_email ? `<p><i class="fa-solid fa-envelope ml-2 text-blue-500"></i> ${s.contact_email}</p>` : ''}
+            ${s.contact_phone ? `<p dir="ltr"><i class="fa-solid fa-phone ml-2 text-green-500"></i> ${s.contact_phone}</p>` : ''}
+          </div>
         </div>
 
-        <!-- العمود الثاني: روابط الصفحات -->
-        <div class="space-y-3">
-          <h3 class="font-bold text-main mb-4">الصفحات</h3>
-          <a href="#/home" class="block text-sm text-muted hover:text-primary transition">الرئيسية</a>
-          <a href="#/courses" class="block text-sm text-muted hover:text-primary transition">الكورسات</a>
-          <a href="#/teachers" class="block text-sm text-muted hover:text-primary transition">المدرسون</a>
-          <a href="#/signup" class="block text-sm text-muted hover:text-primary transition">انضم إلينا</a>
+        <!-- العمود الثاني: الصفحات -->
+        <div class="space-y-3 flex flex-col items-center md:items-start">
+          <a href="#/home" class="text-sm text-muted hover:text-primary transition">الرئيسية</a>
+          <a href="#/courses" class="text-sm text-muted hover:text-primary transition">الكورسات</a>
+          <a href="#/teachers" class="text-sm text-muted hover:text-primary transition">المدرسون</a>
+          <a href="#/signup" class="text-sm text-muted hover:text-primary transition">انضم إلينا</a>
         </div>
 
-        <!-- العمود الثالث: الروابط القانونية + السوشيال ميديا -->
-        <div class="space-y-3">
-          <h3 class="font-bold text-main mb-4">قانوني</h3>
-          <a href="#/policy/terms" class="block text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
-          <a href="#/policy/privacy" class="block text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
-          <a href="#/policy/refund" class="block text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
+        <!-- العمود الثالث: القانوني + السوشيال -->
+        <div class="space-y-6 flex flex-col items-center md:items-start">
+          <div class="space-y-3 flex flex-col items-center md:items-start">
+            <a href="#/policy/terms" class="text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
+            <a href="#/policy/privacy" class="text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
+            <a href="#/policy/refund" class="text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
+          </div>
           
-          <!-- السوشيال ميديا -->
           ${socials.length ? `
-            <div class="pt-4 mt-4 border-t border-border">
-              <h3 class="font-bold text-main mb-3 text-sm">تابعنا</h3>
-              <div class="flex flex-col gap-2">
-                ${socials.map(x => `
-                  <a href="${x.url}" target="_blank" class="flex items-center gap-2 text-sm text-muted ${x.color} transition">
-                    <i class="fa-brands ${x.icon} w-5 text-center"></i> ${x.name}
-                  </a>
-                `).join('')}
-              </div>
+            <div class="space-y-2 flex flex-col items-center md:items-start">
+              ${socials.map(x => `
+                <a href="${x.url}" target="_blank" class="flex items-center gap-2 text-sm text-muted ${x.color} transition">
+                  <i class="fa-brands ${x.icon}"></i> ${x.name}
+                </a>
+              `).join('')}
             </div>
           ` : ''}
         </div>
       </div>
 
-      <!-- شريط الحقوق السفلي (بدون إيميل أو رقم) -->
+      <!-- الحقوق في النص -->
       <div class="pt-6 border-t border-border text-center text-xs text-muted">
         <p>&copy; ${new Date().getFullYear()} ${s.platform_name || 'منصة التعليم'}. جميع الحقوق محفوظة.</p>
       </div>

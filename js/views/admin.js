@@ -376,7 +376,7 @@ async function openSettingsModal() {
       show_instagram: m.root.querySelector('#show-instagram').checked,
       show_tiktok: m.root.querySelector('#show-tiktok').checked,
     };
-    const { error } = await supabase.from('settings').update(updates).eq('id', 1);
+    const { data: updated, error } = await supabase.from('settings').upsert({ id: 1, ...updates }).select();
     if (error) { toast(error.message, 'error'); return; }
     
     // مسح البيانات القديمة من الذاكرة وإجبار السيرفر على إرسال الجديد

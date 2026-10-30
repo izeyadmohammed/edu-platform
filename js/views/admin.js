@@ -317,7 +317,15 @@ async function openSettingsModal() {
           </div>
         </div>
 
-        <h4 class="font-bold text-green-500 mt-6 mb-2">أرقام التواصل</h4>
+        <h4 class="font-bold text-green-500 mt-6 mb-2">بيانات التواصل</h4>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">البريد الإلكتروني</label>
+          <input id="contact-email" value="${escapeHtml(s?.contact_email || '')}" class="input-field" dir="ltr" placeholder="email@example.com">
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">رقم الهاتف</label>
+          <input id="contact-phone" value="${escapeHtml(s?.contact_phone || '')}" class="input-field" dir="ltr" placeholder="01xxxxxxxxx">
+        </div>
         <div>
           <label class="block text-sm font-bold mb-1 text-main">رقم الواتساب للدعم</label>
           <input id="support-whatsapp" value="${escapeHtml(s?.support_whatsapp || '')}" class="input-field" dir="ltr">

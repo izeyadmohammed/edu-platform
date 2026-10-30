@@ -131,6 +131,7 @@ export async function renderFooter() {
   if (!store.settings) await getSettings();
   const s = store.settings || {};
   
+  // تجهيز السوشيال ميديا
   const socials = [
     { key: 'facebook', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
     { key: 'whatsapp', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
@@ -139,23 +140,43 @@ export async function renderFooter() {
     { key: 'tiktok', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
   ].filter(x => x.show && x.url);
 
-  f.className = 'border-t border-border py-8 mt-12 bg-black/5 dark:bg-black/20';
-  f.innerHTML = `<div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted">
-    <div class="flex items-center gap-2 font-bold text-main"><i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}</div>
-    
-    ${socials.length ? `
-      <div class="flex gap-4 text-xl">
-        ${socials.map(x => `<a href="${x.url}" target="_blank" class="text-muted ${x.color} transition"><i class="fa-brands ${x.icon}"></i></a>`).join('')}
-      </div>
-    ` : ''}
+  f.className = 'border-t border-border py-10 mt-12 bg-black/5 dark:bg-black/20';
+  f.innerHTML = `
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        
+        <!-- الشمال: اسم المنصة والأيقونات -->
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-2 font-black text-xl text-main">
+            <i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}
+          </div>
+          ${socials.length ? `
+            <div class="flex gap-4 text-xl">
+              ${socials.map(x => `<a href="${x.url}" target="_blank" class="text-muted ${x.color} transition"><i class="fa-brands ${x.icon}"></i></a>`).join('')}
+            </div>
+          ` : ''}
+        </div>
 
-    <div class="flex gap-4 font-bold text-xs">
-      <a href="#/policy/terms" class="hover:text-primary transition">شروط الاستخدام</a>
-      <a href="#/policy/privacy" class="hover:text-primary transition">سياسة الخصوصية</a>
-      <a href="#/policy/refund" class="hover:text-primary transition">سياسة الاسترجاع</a>
+        <!-- النص: بيانات التواصل -->
+        <div class="flex flex-col items-center justify-center text-center gap-2 text-sm text-muted">
+          <p><i class="fa-solid fa-envelope ml-2"></i> ${s.contact_email || 'البريد الإلكتروني'}</p>
+          <p dir="ltr"><i class="fa-solid fa-phone ml-2"></i> ${s.contact_phone || 'رقم الهاتف'}</p>
+        </div>
+
+        <!-- اليمين: الروابط القانونية تحت بعض -->
+        <div class="flex flex-col items-end gap-2 text-sm text-muted">
+          <a href="#/policy/terms" class="hover:text-primary transition">شروط الاستخدام</a>
+          <a href="#/policy/privacy" class="hover:text-primary transition">سياسة الخصوصية</a>
+          <a href="#/policy/refund" class="hover:text-primary transition">سياسة الاسترجاع</a>
+        </div>
+      </div>
+
+      <!-- الحقوق في النص -->
+      <div class="text-center text-xs text-muted pt-6 border-t border-border">
+        &copy; ${new Date().getFullYear()} جميع الحقوق محفوظة لمنصة ${s.platform_name || 'التعليم'}
+      </div>
     </div>
-    <p>&copy; ${new Date().getFullYear()} جميع الحقوق محفوظة</p>
-  </div>`;
+  `;
 }
 
 export function setLoading(el = document.getElementById('app-main'), msg = 'جاري التحميل...') {

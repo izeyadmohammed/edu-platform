@@ -133,17 +133,16 @@ export async function renderFooter() {
   
   // تجهيز السوشيال ميديا
   const socials = [
-    { key: 'facebook', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
-    { key: 'whatsapp', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
-    { key: 'telegram', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s.telegram_url, show: s.show_telegram },
-    { key: 'instagram', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s.instagram_url, show: s.show_instagram },
-    { key: 'tiktok', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
+    { key: 'facebook', name: 'فيسبوك', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
+    { key: 'whatsapp', name: 'واتساب', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
+    { key: 'telegram', name: 'تيلجرام', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s.telegram_url, show: s.show_telegram },
+    { key: 'instagram', name: 'إنستجرام', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s.instagram_url, show: s.show_instagram },
+    { key: 'tiktok', name: 'تيك توك', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
   ].filter(x => x.show && x.url);
 
   f.className = 'border-t border-border py-12 mt-16 bg-black/5 dark:bg-[#0B1120]';
   f.innerHTML = `
     <div class="container mx-auto px-6 max-w-7xl">
-      <!-- المحتوى الرئيسي للفوتر -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         
         <!-- العمود الأول: الشعار والوصف -->
@@ -155,12 +154,6 @@ export async function renderFooter() {
           <p class="text-sm text-muted leading-relaxed max-w-md">
             ${s.hero_subtitle || 'منصة تعليمية متكاملة تهدف لتمكين الطلاب من خلال محتوى تعليمي عالي الجودة وأدوات تفاعلية.'}
           </p>
-          <div class="flex gap-3">
-             ${socials.map(x => `
-              <a href="${x.url}" target="_blank" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-muted ${x.color} transition hover:-translate-y-1">
-                <i class="fa-brands ${x.icon}"></i>
-              </a>`).join('')}
-          </div>
         </div>
 
         <!-- العمود الثاني: روابط الصفحات -->
@@ -172,22 +165,32 @@ export async function renderFooter() {
           <a href="#/signup" class="block text-sm text-muted hover:text-primary transition">انضم إلينا</a>
         </div>
 
-        <!-- العمود الثالث: الروابط القانونية -->
+        <!-- العمود الثالث: الروابط القانونية + السوشيال ميديا -->
         <div class="space-y-3">
           <h3 class="font-bold text-main mb-4">قانوني</h3>
           <a href="#/policy/terms" class="block text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
           <a href="#/policy/privacy" class="block text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
           <a href="#/policy/refund" class="block text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
+          
+          <!-- السوشيال ميديا -->
+          ${socials.length ? `
+            <div class="pt-4 mt-4 border-t border-border">
+              <h3 class="font-bold text-main mb-3 text-sm">تابعنا</h3>
+              <div class="flex flex-col gap-2">
+                ${socials.map(x => `
+                  <a href="${x.url}" target="_blank" class="flex items-center gap-2 text-sm text-muted ${x.color} transition">
+                    <i class="fa-brands ${x.icon} w-5 text-center"></i> ${x.name}
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
 
-      <!-- شريط الحقوق السفلي -->
-      <div class="pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted">
+      <!-- شريط الحقوق السفلي (بدون إيميل أو رقم) -->
+      <div class="pt-6 border-t border-border text-center text-xs text-muted">
         <p>&copy; ${new Date().getFullYear()} ${s.platform_name || 'منصة التعليم'}. جميع الحقوق محفوظة.</p>
-        <div class="flex gap-4">
-          <span dir="ltr"><i class="fa-solid fa-envelope ml-1"></i> ${s.contact_email || ''}</span>
-          <span dir="ltr"><i class="fa-solid fa-phone ml-1"></i> ${s.contact_phone || ''}</span>
-        </div>
       </div>
     </div>
   `;

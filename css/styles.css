@@ -1,20 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 
 :root {
-  --bg-main: #F8FAFC;
-  --bg-card: #FFFFFF;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --primary: #3B82F6;
-  --accent: #10B981;
-  --border: #E2E8F0;
-}
-
-.dark {
-  --bg-main: #0B1120;
-  --bg-card: rgba(30, 41, 59, 0.7);
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
+  --bg-main: #0B1120; --bg-card: rgba(30, 41, 59, 0.7);
+  --text-main: #F8FAFC; --text-muted: #94A3B8;
+  --primary: #3B82F6; --accent: #10B981;
   --border: rgba(255, 255, 255, 0.08);
 }
 
@@ -23,166 +12,51 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   min-height: 100vh;
-  transition: background-color 0.3s, color 0.3s;
 }
 
-/* Glassmorphism (only in dark mode) */
 .glass-card {
   background: var(--bg-card);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   border-radius: 1rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.dark .glass-card {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
-.glass-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 40px rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
+
+/* إخفاء الحواف اللي فيها لوجو يوتيوب */
+#vid-container-${id}:fullscreen iframe,
+.video-wrapper:-webkit-full-screen iframe {
+  width: 100% !important;
+  height: 100% !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: scale(1.15); /* تكبير بسيط عشان نخفي الحواف */
 }
 
-.glass-header {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-}
-.dark .glass-header {
-  background: rgba(11, 17, 32, 0.8);
+#vid-container-${id}:fullscreen .video-wrapper,
+.video-wrapper:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-  color: white; border-radius: 0.5rem; padding: 0.5rem 1.5rem;
-  font-weight: 700; transition: all 0.3s ease;
-}
-.btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
-
-.btn-accent {
-  background: linear-gradient(135deg, #10B981, #059669);
-  color: white; border-radius: 0.5rem; padding: 0.5rem 1.5rem;
-  font-weight: 700; transition: all 0.3s ease;
+/* العلامة المائية */
+.watermark-layer {
+  position: absolute; inset: 0;
+  pointer-events: none; overflow: hidden; z-index: 50;
 }
 
-.input-field {
-  width: 100%; background: #FFFFFF;
-  border: 1px solid #CBD5E1; color: #0F172A;
-  border-radius: 0.5rem; padding: 0.75rem 1rem; transition: all 0.3s ease;
-}
-.dark .input-field {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1); color: white;
-}
-.input-field:focus {
-  outline: none; border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-up { animation: fadeUp 0.6s ease-out forwards; }
-
-/* Watermark */
-.watermark-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 10; }
 .watermark-item {
-  position: absolute; font-size: 20px; font-weight: 900;
-  color: rgba(0, 0, 0, 0.05); text-shadow: 0 0 4px rgba(255,255,255,0.5);
+  position: absolute;
+  font-size: 24px; font-weight: 900;
+  color: rgba(255, 255, 255, 0.25);
+  text-shadow: 0 0 8px rgba(0,0,0,0.8);
   white-space: nowrap; user-select: none;
   animation: float 25s linear infinite;
 }
-.dark .watermark-item { color: rgba(255, 255, 255, 0.25); text-shadow: 0 0 4px rgba(0,0,0,0.5); }
+
 @keyframes float {
   0% { transform: translate(0, 0) rotate(-15deg); }
-  25% { transform: translate(30vw, 20vh) rotate(-15deg); }
-  50% { transform: translate(60vw, 40vh) rotate(-15deg); }
-  75% { transform: translate(30vw, 70vh) rotate(-15deg); }
+  25% { transform: translate(40vw, 30vh) rotate(-15deg); }
+  50% { transform: translate(70vw, 60vh) rotate(-15deg); }
+  75% { transform: translate(30vw, 80vh) rotate(-15deg); }
   100% { transform: translate(0, 0) rotate(-15deg); }
-}
-
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-main); }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
-/* إخفاء أي عناصر علوية تخص يوتيوب */
-iframe#player-container-0, iframe[id^="player-container-"] {
-  pointer-events: auto;
-}
-
-/* إخفاء حواف يوتيوب بالقص */
-.video-crop {
-  pointer-events: auto;
-}
-
-/* إصلاح الفيديو */
-iframe {
-  pointer-events: auto !important;
-}
-
-/* العلامة المائية المتحركة */
-.watermark-layer {
-  position: absolute !important;
-  inset: 0 !important;
-  pointer-events: none !important;
-  overflow: hidden !important;
-  z-index: 999 !important;
-}
-.watermark-item {
-  position: absolute !important;
-  font-size: 16px !important;
-  font-weight: 900 !important;
-  color: rgba(255, 255, 255, 0.2) !important;
-  text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;
-  white-space: nowrap !important;
-  user-select: none !important;
-  animation: float 20s linear infinite !important;
-}
-@keyframes float {
-  0% { transform: translate(0, 0) rotate(-15deg); }
-  25% { transform: translate(30vw, 20vh) rotate(-15deg); }
-  50% { transform: translate(60vw, 40vh) rotate(-15deg); }
-  75% { transform: translate(30vw, 70vh) rotate(-15deg); }
-  100% { transform: translate(0, 0) rotate(-15deg); }
-}
-
-/* العلامة المائية داخل الفيديو */
-.video-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.video-wrapper .watermark-layer {
-  position: absolute !important;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 50 !important;
-  pointer-events: none;
-}
-
-/* ضبط الفيديو في وضع التكبير */
-#vid-container-${id}:fullscreen .video-wrapper {
-  width: 100vw;
-  height: 100vh;
-}
-#vid-container-${id}:fullscreen iframe {
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-}
-
-/* دعم المتصفحات القديمة */
-:-webkit-full-screen .video-wrapper {
-  width: 100vw;
-  height: 100vh;
-}
-:-webkit-full-screen iframe {
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
 }

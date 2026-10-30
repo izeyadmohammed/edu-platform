@@ -31,10 +31,10 @@ export default async function lessonView(el, params) {
               <div class="relative w-full aspect-video overflow-hidden bg-black" id="vid-container-${v.id}">
                 <div class="video-wrapper absolute inset-0 w-full h-full" id="vid-wrap-${v.id}">
                   <iframe 
-                    class="absolute w-[120%] h-[140%] -top-[20%] -left-[10%]" 
-                    src="${youtubeEmbed(v.url)}?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1" 
+                    class="absolute w-[110%] h-[130%] -top-[15%] -left-[5%]" 
+                    src="${youtubeEmbed(v.url)}?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1&playsinline=1" 
                     frameborder="0" 
-                    allow="autoplay; encrypted-media" 
+                    allow="autoplay; encrypted-media; fullscreen" 
                     allowfullscreen>
                   </iframe>
                 </div>
@@ -95,13 +95,9 @@ export default async function lessonView(el, params) {
       const containerId = btn.dataset.fullscreen;
       const container = el.querySelector(`#vid-container-${containerId}`);
       if (container) {
-        if (container.requestFullscreen) {
-          container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-          container.webkitRequestFullscreen();
-        } else if (container.msRequestFullscreen) {
-          container.msRequestFullscreen();
-        }
+        if (container.requestFullscreen) container.requestFullscreen();
+        else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+        else if (container.msRequestFullscreen) container.msRequestFullscreen();
       }
     };
   });
@@ -111,7 +107,4 @@ export default async function lessonView(el, params) {
   }
 }
 
-// دالة تعديل المحاضرة (نفس الكود القديم)
-export async function openLectureEditor(lecture) {
-  // ... (نفس الكود القديم اللي كان موجود)
-}
+export async function openLectureEditor(lecture) { /* ... (نفس الكود القديم) */ }

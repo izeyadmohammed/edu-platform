@@ -131,15 +131,15 @@ export async function renderHeader() {
 export async function renderFooter() {
   const f = document.getElementById('app-footer');
   if (!f) return;
-  if (!store.settings) await getSettings();
-  const s = store.settings || {};
   
+  // نجيب الإعدادات من السيرفر كل مرة نتأكد إنها محدثة
+  const { data: s } = await supabase.from('settings').select('*').eq('id', 1).single();
   const socials = [
-    { key: 'facebook', name: 'فيسبوك', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s.facebook_url, show: s.show_facebook },
-    { key: 'whatsapp', name: 'واتساب', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s.whatsapp_url, show: s.show_whatsapp },
-    { key: 'telegram', name: 'تيلجرام', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s.telegram_url, show: s.show_telegram },
-    { key: 'instagram', name: 'إنستجرام', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s.instagram_url, show: s.show_instagram },
-    { key: 'tiktok', name: 'تيك توك', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
+    { key: 'facebook', name: 'فيسبوك', icon: 'fa-facebook', color: 'hover:text-blue-500', url: s?.facebook_url, show: s?.show_facebook },
+    { key: 'whatsapp', name: 'واتساب', icon: 'fa-whatsapp', color: 'hover:text-green-500', url: s?.whatsapp_url, show: s?.show_whatsapp },
+    { key: 'telegram', name: 'تيلجرام', icon: 'fa-telegram', color: 'hover:text-blue-400', url: s?.telegram_url, show: s?.show_telegram },
+    { key: 'instagram', name: 'إنستجرام', icon: 'fa-instagram', color: 'hover:text-pink-500', url: s?.instagram_url, show: s?.show_instagram },
+    { key: 'tiktok', name: 'تيك توك', icon: 'fa-tiktok', color: 'hover:text-white', url: s?.tiktok_url, show: s?.show_tiktok },
   ].filter(x => x.show && x.url);
 
   f.className = 'border-t border-border py-12 mt-16 bg-black/5 dark:bg-[#0B1120]';
@@ -147,19 +147,17 @@ export async function renderFooter() {
     <div class="container mx-auto px-6 max-w-7xl">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-12 text-center md:text-right">
         
-        <!-- 1. الشعار وبيانات التواصل -->
         <div class="space-y-4">
           <div class="flex items-center justify-center md:justify-start gap-2 font-black text-2xl text-main">
-            ${s.logo_url ? `<img src="${s.logo_url}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
-            ${s.platform_name || 'منصة التعليم'}
+            ${s?.logo_url ? `<img src="${s.logo_url}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
+            ${s?.platform_name || 'منصة التعليم'}
           </div>
           <div class="flex flex-col gap-2 text-sm text-muted items-center md:items-start">
-            ${s.contact_email ? `<p><i class="fa-solid fa-envelope ml-2 text-blue-500"></i> ${s.contact_email}</p>` : ''}
-            ${s.contact_phone ? `<p dir="ltr"><i class="fa-solid fa-phone ml-2 text-green-500"></i> ${s.contact_phone}</p>` : ''}
+            ${s?.contact_email ? `<p><i class="fa-solid fa-envelope ml-2 text-blue-500"></i> ${s.contact_email}</p>` : ''}
+            ${s?.contact_phone ? `<p dir="ltr"><i class="fa-solid fa-phone ml-2 text-green-500"></i> ${s.contact_phone}</p>` : ''}
           </div>
         </div>
 
-        <!-- 2. الصفحات -->
         <div class="space-y-3 flex flex-col items-center md:items-start">
           <a href="#/home" class="text-sm text-muted hover:text-primary transition">الرئيسية</a>
           <a href="#/courses" class="text-sm text-muted hover:text-primary transition">الكورسات</a>
@@ -167,14 +165,12 @@ export async function renderFooter() {
           <a href="#/signup" class="text-sm text-muted hover:text-primary transition">انضم إلينا</a>
         </div>
 
-        <!-- 3. الروابط القانونية -->
         <div class="space-y-3 flex flex-col items-center md:items-start">
           <a href="#/policy/terms" class="text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
           <a href="#/policy/privacy" class="text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
           <a href="#/policy/refund" class="text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
         </div>
 
-        <!-- 4. السوشيال ميديا -->
         <div class="space-y-3 flex flex-col items-center md:items-start">
           ${socials.length ? socials.map(x => `
             <a href="${x.url}" target="_blank" class="flex items-center gap-2 text-sm text-muted ${x.color} transition">
@@ -184,9 +180,8 @@ export async function renderFooter() {
         </div>
       </div>
 
-      <!-- الحقوق -->
       <div class="pt-6 border-t border-border text-center text-xs text-muted">
-        <p>&copy; ${new Date().getFullYear()} ${s.platform_name || 'منصة التعليم'}. جميع الحقوق محفوظة.</p>
+        <p>&copy; ${new Date().getFullYear()} ${s?.platform_name || 'منصة التعليم'}. جميع الحقوق محفوظة.</p>
       </div>
     </div>
   `;

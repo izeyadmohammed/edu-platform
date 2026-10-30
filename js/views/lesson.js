@@ -180,10 +180,16 @@ export async function openLectureEditor(lecture) {
               <div class="bg-black/5 dark:bg-black/20 p-3 rounded-lg mb-3">
                 <div class="flex gap-2 mb-2 items-start">
                   <input data-exam="${ei}" data-q="${qi}" data-f="questionText" value="${escapeHtml(q.questionText)}" placeholder="نص السؤال" class="input-field text-sm flex-1">
-                  <label class="cursor-pointer bg-blue-500/10 text-blue-500 rounded px-3 py-2 text-sm flex items-center gap-1 shrink-0" title="رفع صورة للسؤال">
-                    <i class="fa-solid fa-image"></i>
-                    <input type="file" class="hidden" data-img-exam="${ei}" data-img-q="${qi}" accept="image/*">
-                  </label>
+                  <div class="flex gap-1 shrink-0">
+                    <label class="cursor-pointer bg-blue-500/10 text-blue-500 rounded px-2 py-2 text-sm flex items-center justify-center" title="رفع صورة من المعرض">
+                      <i class="fa-solid fa-image"></i>
+                      <input type="file" class="hidden" data-img-exam="${ei}" data-img-q="${qi}" accept="image/*">
+                    </label>
+                    <label class="cursor-pointer bg-green-500/10 text-green-500 rounded px-2 py-2 text-sm flex items-center justify-center" title="تصوير السؤال بالكاميرا">
+                      <i class="fa-solid fa-camera"></i>
+                      <input type="file" class="hidden" data-cam-exam="${ei}" data-cam-q="${qi}" accept="image/*" capture="environment">
+                    </label>
+                  </div>
                 </div>
                 ${q.image ? `<img src="${q.image}" class="h-16 rounded mb-2 border border-border object-contain">` : ''}
                 ${(q.options||[]).map((o, oi) => `
@@ -219,7 +225,8 @@ export async function openLectureEditor(lecture) {
 
   function bindTabEvents() {
     // رفع الصور
-    content.querySelectorAll('input[type="file"]').forEach(inp => {
+    // رفع من المعرض
+    content.querySelectorAll('input[data-img-exam]').forEach(inp => {
       inp.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -232,6 +239,24 @@ export async function openLectureEditor(lecture) {
         const qi = +inp.dataset.imgQ;
         local.mcq_exams[ei].questions[qi].image = data.publicUrl;
         toast('تم الرفع', 'success');
+        renderTab();
+      };
+    });
+    
+    // تصوير بالكاميرا
+    content.querySelectorAll('input[data-cam-exam]').forEach(inp => {
+      inp.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        toast('جاري رفع الصورة...', 'info');
+        const fileName = `cam_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`;
+        const { error } = await supabase.storage.from('images').upload(fileName, file);
+        if (error) { toast('فشل الرفع', 'error'); return; }
+        const { data } = await supabase.storage.from('images').getPublicUrl(fileName);
+        const ei = +inp.dataset.camExam;
+        const qi = +inp.dataset.camQ;
+        local.mcq_exams[ei].questions[qi].image = data.publicUrl;
+        toast('تم التصوير بنجاح', 'success');
         renderTab();
       };
     });

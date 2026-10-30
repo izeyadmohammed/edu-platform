@@ -140,40 +140,54 @@ export async function renderFooter() {
     { key: 'tiktok', icon: 'fa-tiktok', color: 'hover:text-white', url: s.tiktok_url, show: s.show_tiktok },
   ].filter(x => x.show && x.url);
 
-  f.className = 'border-t border-border py-10 mt-12 bg-black/5 dark:bg-black/20';
+  f.className = 'border-t border-border py-12 mt-16 bg-black/5 dark:bg-[#0B1120]';
   f.innerHTML = `
-    <div class="container mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <div class="container mx-auto px-6 max-w-7xl">
+      <!-- المحتوى الرئيسي للفوتر -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         
-        <!-- الشمال: اسم المنصة والأيقونات -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 font-black text-xl text-main">
-            <i class="fa-solid fa-cube text-blue-500"></i> ${s.platform_name || 'منصة التعليم'}
+        <!-- العمود الأول: الشعار والوصف -->
+        <div class="col-span-1 md:col-span-2 space-y-4">
+          <div class="flex items-center gap-2 font-black text-2xl text-main">
+            ${s.logo_url ? `<img src="${s.logo_url}" class="w-10 h-10 rounded-xl object-cover">` : `<i class="fa-solid fa-cube text-blue-500"></i>`}
+            ${s.platform_name || 'منصة التعليم'}
           </div>
-          ${socials.length ? `
-            <div class="flex gap-4 text-xl">
-              ${socials.map(x => `<a href="${x.url}" target="_blank" class="text-muted ${x.color} transition"><i class="fa-brands ${x.icon}"></i></a>`).join('')}
-            </div>
-          ` : ''}
+          <p class="text-sm text-muted leading-relaxed max-w-md">
+            ${s.hero_subtitle || 'منصة تعليمية متكاملة تهدف لتمكين الطلاب من خلال محتوى تعليمي عالي الجودة وأدوات تفاعلية.'}
+          </p>
+          <div class="flex gap-3">
+             ${socials.map(x => `
+              <a href="${x.url}" target="_blank" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-muted ${x.color} transition hover:-translate-y-1">
+                <i class="fa-brands ${x.icon}"></i>
+              </a>`).join('')}
+          </div>
         </div>
 
-        <!-- النص: بيانات التواصل -->
-        <div class="flex flex-col items-center justify-center text-center gap-2 text-sm text-muted">
-          <p><i class="fa-solid fa-envelope ml-2"></i> ${s.contact_email || 'البريد الإلكتروني'}</p>
-          <p dir="ltr"><i class="fa-solid fa-phone ml-2"></i> ${s.contact_phone || 'رقم الهاتف'}</p>
+        <!-- العمود الثاني: روابط الصفحات -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-main mb-4">الصفحات</h3>
+          <a href="#/home" class="block text-sm text-muted hover:text-primary transition">الرئيسية</a>
+          <a href="#/courses" class="block text-sm text-muted hover:text-primary transition">الكورسات</a>
+          <a href="#/teachers" class="block text-sm text-muted hover:text-primary transition">المدرسون</a>
+          <a href="#/signup" class="block text-sm text-muted hover:text-primary transition">انضم إلينا</a>
         </div>
 
-        <!-- اليمين: الروابط القانونية تحت بعض -->
-        <div class="flex flex-col items-end gap-2 text-sm text-muted">
-          <a href="#/policy/terms" class="hover:text-primary transition">شروط الاستخدام</a>
-          <a href="#/policy/privacy" class="hover:text-primary transition">سياسة الخصوصية</a>
-          <a href="#/policy/refund" class="hover:text-primary transition">سياسة الاسترجاع</a>
+        <!-- العمود الثالث: الروابط القانونية -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-main mb-4">قانوني</h3>
+          <a href="#/policy/terms" class="block text-sm text-muted hover:text-primary transition">شروط الاستخدام</a>
+          <a href="#/policy/privacy" class="block text-sm text-muted hover:text-primary transition">سياسة الخصوصية</a>
+          <a href="#/policy/refund" class="block text-sm text-muted hover:text-primary transition">سياسة الاسترجاع</a>
         </div>
       </div>
 
-      <!-- الحقوق في النص -->
-      <div class="text-center text-xs text-muted pt-6 border-t border-border">
-        &copy; ${new Date().getFullYear()} جميع الحقوق محفوظة لمنصة ${s.platform_name || 'التعليم'}
+      <!-- شريط الحقوق السفلي -->
+      <div class="pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted">
+        <p>&copy; ${new Date().getFullYear()} ${s.platform_name || 'منصة التعليم'}. جميع الحقوق محفوظة.</p>
+        <div class="flex gap-4">
+          <span dir="ltr"><i class="fa-solid fa-envelope ml-1"></i> ${s.contact_email || ''}</span>
+          <span dir="ltr"><i class="fa-solid fa-phone ml-1"></i> ${s.contact_phone || ''}</span>
+        </div>
       </div>
     </div>
   `;

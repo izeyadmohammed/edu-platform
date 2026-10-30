@@ -106,12 +106,8 @@ async function renderStudents(el) {
     </div>
   `;
 
-  el.querySelectorAll('[data-edit]').forEach(b => {
-    b.onclick = () => openEditStudentModal(profiles.find(x => x.id === b.dataset.edit));
-  });
-  el.querySelectorAll('[data-charge]').forEach(b => {
-    b.onclick = () => openChargeModal(b.dataset.charge);
-  });
+  el.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openEditStudentModal(profiles.find(x => x.id === b.dataset.edit)));
+  el.querySelectorAll('[data-charge]').forEach(b => b.onclick = () => openChargeModal(b.dataset.charge));
   el.querySelectorAll('[data-block]').forEach(b => {
     b.onclick = async () => {
       const blk = b.dataset.blk === 'true';
@@ -129,7 +125,7 @@ async function renderStudents(el) {
 }
 
 // ==========================================
-// 3. المدرسين
+// 3. المدرسين (مع التعديل والصورة والمادة)
 // ==========================================
 async function renderTeachers(el) {
   const { data: profiles } = await supabase.from('profiles').select('*');
@@ -151,15 +147,19 @@ async function renderTeachers(el) {
           </div>
           <div class="flex-1">
             <h3 class="font-bold text-main">${escapeHtml(t.name)}</h3>
-            <p class="text-xs text-muted">${escapeHtml(t.phone || '')} • ${t.role === 'assistant' ? 'مساعد' : 'مدرس'}</p>
+            <p class="text-xs text-muted">${escapeHtml(t.phone || '')} • ${t.role === 'assistant' ? 'مساعد' : (t.grade || 'مدرس')}</p>
           </div>
-          <button data-del-teacher="${t.id}" class="w-8 h-8 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"><i class="fa-solid fa-trash"></i></button>
+          <div class="flex gap-2">
+             <button data-edit-teacher="${t.id}" class="w-8 h-8 rounded bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"><i class="fa-solid fa-pen"></i></button>
+             <button data-del-teacher="${t.id}" class="w-8 h-8 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"><i class="fa-solid fa-trash"></i></button>
+          </div>
         </div>
       `).join('') || '<p class="text-muted col-span-2 text-center">لا يوجد مدرسين</p>'}
     </div>
   `;
 
   el.querySelector('#add-teacher').onclick = () => openAddTeacherModal();
+  el.querySelectorAll('[data-edit-teacher]').forEach(b => b.onclick = () => openEditTeacherModal(profiles.find(x => x.id === b.dataset.editTeacher)));
   el.querySelectorAll('[data-del-teacher]').forEach(b => {
     b.onclick = async () => {
       if (!confirm('حذف المدرس؟')) return;
@@ -170,7 +170,7 @@ async function renderTeachers(el) {
 }
 
 // ==========================================
-// 4. الأكواد
+// 4. الأكواد (مع الفلترة والنسخ)
 // ==========================================
 async function renderCodes(el) {
   const { data: codes } = await supabase.from('codes').select('*').order('created_at', { ascending: false });
@@ -183,42 +183,154 @@ async function renderCodes(el) {
         <a href="#/admin" class="text-sm font-bold text-muted hover:text-primary mt-2"><i class="fa-solid fa-arrow-right"></i> رجوع</a>
       </div>
     </div>
-    <div class="glass-card p-6 animate-fade-up">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        ${(codes || []).map(c => `
-          <div class="p-3 rounded-lg bg-black/5 dark:bg-white/5 border border-border flex justify-between items-center">
-            <div>
-              <p class="font-mono text-sm text-main font-bold">${escapeHtml(c.code)}</p>
-              <p class="text-xs text-muted">${c.used ? 'مستخدم' : 'متاح'}</p>
-            </div>
-            <div class="text-left">
-              <p class="font-bold text-green-500">${formatMoney(c.amount)}</p>
-              <button data-del-code="${c.id}" class="text-red-500 text-xs mt-1 hover:underline">حذف</button>
-            </div>
-          </div>
-        `).join('') || '<p class="text-muted col-span-3 text-center">لا توجد أكواد</p>'}
-      </div>
+
+    <div class="flex gap-2 mb-4 animate-fade-up">
+       <button class="filter-btn active-filter px-4 py-2 rounded-lg text-sm font-bold bg-primary text-white" data-filter="all">الكل</button>
+       <button class="filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-black/5 dark:bg-white/5 text-muted hover:bg-black/10" data-filter="available">متاح</button>
+       <button class="filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-black/5 dark:bg-white/5 text-muted hover:bg-black/10" data-filter="used">مستخدم</button>
+    </div>
+
+    <div class="glass-card p-6 animate-fade-up" id="codes-container">
+      <!-- سيتم ملؤها بالجافاسكريبت -->
     </div>
   `;
 
-  el.querySelector('#gen-codes').onclick = () => openGenCodesModal();
-  el.querySelectorAll('[data-del-code]').forEach(b => {
-    b.onclick = async () => {
-      if (!confirm('حذف الكود؟')) return;
-      await supabase.from('codes').delete().eq('id', b.dataset.delCode);
-      toast('تم', 'success'); location.reload();
+  function displayCodes(filter = 'all') {
+    const container = el.querySelector('#codes-container');
+    const filtered = (codes || []).filter(c => filter === 'all' ? true : (filter === 'used' ? c.used : !c.used));
+
+    container.innerHTML = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        ${filtered.map(c => `
+          <div class="p-3 rounded-lg bg-black/5 dark:bg-white/5 border border-border flex justify-between items-center">
+            <div>
+              <p class="font-mono text-sm text-main font-bold">${escapeHtml(c.code)}</p>
+              <p class="text-xs ${c.used ? 'text-red-500' : 'text-green-500'}">${c.used ? 'مستخدم' : 'متاح'}</p>
+            </div>
+            <div class="text-left flex flex-col items-end gap-1">
+              <p class="font-bold text-green-500">${formatMoney(c.amount)}</p>
+              <div class="flex gap-2">
+                <button data-copy="${c.code}" class="text-blue-500 text-xs hover:underline"><i class="fa-solid fa-copy"></i> نسخ</button>
+                <button data-del-code="${c.id}" class="text-red-500 text-xs hover:underline"><i class="fa-solid fa-trash"></i> حذف</button>
+              </div>
+            </div>
+          </div>
+        `).join('') || '<p class="text-muted col-span-3 text-center">لا توجد أكواد في هذا التصنيف</p>'}
+      </div>
+    `;
+
+    container.querySelectorAll('[data-copy]').forEach(b => {
+      b.onclick = () => {
+        navigator.clipboard.writeText(b.dataset.copy);
+        toast('تم نسخ الكود', 'success');
+      };
+    });
+    container.querySelectorAll('[data-del-code]').forEach(b => {
+      b.onclick = async () => {
+        if (!confirm('حذف الكود؟')) return;
+        await supabase.from('codes').delete().eq('id', b.dataset.delCode);
+        toast('تم', 'success'); location.reload();
+      };
+    });
+  }
+
+  el.querySelectorAll('.filter-btn').forEach(b => {
+    b.onclick = () => {
+      el.querySelectorAll('.filter-btn').forEach(x => {
+        x.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-black/5 dark:bg-white/5 text-muted hover:bg-black/10';
+      });
+      b.className = 'filter-btn active-filter px-4 py-2 rounded-lg text-sm font-bold bg-primary text-white';
+      displayCodes(b.dataset.filter);
     };
   });
+
+  displayCodes('all');
+  el.querySelector('#gen-codes').onclick = () => openGenCodesModal();
 }
 
 // ==========================================
 // المودالات
 // ==========================================
-function openSettingsModal() {
-  toast('الإعدادات متاحة قريباً', 'info');
+async function openSettingsModal() {
+  const { data: s } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const m = modal({
+    title: 'إعدادات المنصة',
+    body: `
+      <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <h4 class="font-bold text-blue-500 mb-2">الهوية البصرية</h4>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">اسم المنصة</label>
+          <input id="platform-name" value="${escapeHtml(s?.platform_name || '')}" class="input-field">
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">لوجو المنصة</label>
+          <div class="flex items-center gap-3">
+            <div id="logo-prev" class="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-border">
+              ${s?.logo_url ? `<img src="${s.logo_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cube text-muted"></i>`}
+            </div>
+            <input type="file" id="logo-upload" accept="image/*" class="text-sm w-full file:bg-blue-500/10 file:text-blue-500 file:border-0 file:rounded-lg file:px-3 file:py-1">
+          </div>
+        </div>
+
+        <h4 class="font-bold text-green-500 mt-6 mb-2">أرقام التواصل</h4>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">رقم الواتساب للدعم</label>
+          <input id="support-whatsapp" value="${escapeHtml(s?.support_whatsapp || '')}" class="input-field" dir="ltr">
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">رقم الواتساب للمطور</label>
+          <input id="developer-whatsapp" value="${escapeHtml(s?.developer_whatsapp || '')}" class="input-field" dir="ltr">
+        </div>
+
+        <h4 class="font-bold text-blue-500 mt-6 mb-2">روابط التواصل الاجتماعي</h4>
+        ${socialInput('facebook', 'فيسبوك', s?.facebook_url, s?.show_facebook)}
+        ${socialInput('whatsapp', 'واتساب', s?.whatsapp_url, s?.show_whatsapp)}
+        ${socialInput('telegram', 'تيلجرام', s?.telegram_url, s?.show_telegram)}
+        ${socialInput('instagram', 'إنستجرام', s?.instagram_url, s?.show_instagram)}
+        ${socialInput('tiktok', 'تيك توك', s?.tiktok_url, s?.show_tiktok)}
+      </div>`,
+    actions: `<button id="save-settings" class="btn-primary w-full">حفظ جميع الإعدادات</button>`
+  });
+
+  let newLogoUrl = s?.logo_url || '';
+  m.root.querySelector('#logo-upload').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    toast('جاري رفع الصورة...', 'info');
+    const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
+    const { error } = await supabase.storage.from('images').upload(fileName, file);
+    if (error) { toast('فشل الرفع', 'error'); return; }
+    const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+    newLogoUrl = data.publicUrl;
+    m.root.querySelector('#logo-prev').innerHTML = `<img src="${newLogoUrl}" class="w-full h-full object-cover">`;
+    toast('تم', 'success');
+  };
+
+  m.root.querySelector('#save-settings').onclick = async () => {
+    const updates = {
+      platform_name: m.root.querySelector('#platform-name').value,
+      logo_url: newLogoUrl,
+      support_whatsapp: m.root.querySelector('#support-whatsapp').value,
+      developer_whatsapp: m.root.querySelector('#developer-whatsapp').value,
+      facebook_url: m.root.querySelector('#url-facebook').value,
+      whatsapp_url: m.root.querySelector('#url-whatsapp').value,
+      telegram_url: m.root.querySelector('#url-telegram').value,
+      instagram_url: m.root.querySelector('#url-instagram').value,
+      tiktok_url: m.root.querySelector('#url-tiktok').value,
+      show_facebook: m.root.querySelector('#show-facebook').checked,
+      show_whatsapp: m.root.querySelector('#show-whatsapp').checked,
+      show_telegram: m.root.querySelector('#show-telegram').checked,
+      show_instagram: m.root.querySelector('#show-instagram').checked,
+      show_tiktok: m.root.querySelector('#show-tiktok').checked,
+    };
+    const { error } = await supabase.from('settings').update(updates).eq('id', 1);
+    if (error) { toast(error.message, 'error'); return; }
+    toast('تم الحفظ', 'success'); m.close(); location.reload();
+  };
 }
 
 function openAddTeacherModal() {
+  const grades = ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي', 'الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي', 'عام'];
   const m = modal({
     title: 'إضافة مدرس جديد',
     body: `
@@ -226,6 +338,10 @@ function openAddTeacherModal() {
         <input id="t-name" placeholder="اسم المدرس" class="input-field">
         <input id="t-phone" placeholder="رقم الهاتف" class="input-field" dir="ltr">
         <input id="t-pass" type="password" placeholder="كلمة المرور (افتراضي 12345678)" class="input-field" dir="ltr">
+        <select id="t-grade" class="input-field">
+          <option value="">اختر المادة / الصف</option>
+          ${grades.map(g => `<option value="${g}">${g}</option>`).join('')}
+        </select>
       </div>`,
     actions: `<button id="save-teacher" class="btn-primary w-full">إضافة المدرس</button>`
   });
@@ -233,19 +349,75 @@ function openAddTeacherModal() {
     const name = m.root.querySelector('#t-name').value;
     const phone = m.root.querySelector('#t-phone').value;
     const pass = m.root.querySelector('#t-pass').value;
+    const grade = m.root.querySelector('#t-grade').value;
     if (!name || !phone) { toast('الاسم والرقم مطلوبين', 'warn'); return; }
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`https://pephaughlgezamtzphkt.supabase.co/functions/v1/create_teacher`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify({ name, phone, password: pass })
+        body: JSON.stringify({ name, phone, password: pass, grade })
       });
       const out = await res.json();
       if (!res.ok) throw new Error(out.error || 'فشل الاتصال');
       toast('تم إنشاء المدرس. الباسورد: ' + out.default_password, 'success');
       m.close(); location.reload();
     } catch (e) { toast(e.message, 'error'); }
+  };
+}
+
+function openEditTeacherModal(t) {
+  const grades = ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي', 'الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي', 'عام'];
+  const m = modal({
+    title: 'تعديل بيانات المدرس',
+    body: `
+      <div class="space-y-3">
+        <input id="et-name" value="${escapeHtml(t.name)}" placeholder="الاسم" class="input-field">
+        <input id="et-phone" value="${escapeHtml(t.phone || '')}" placeholder="رقم الهاتف" class="input-field" dir="ltr">
+        <select id="et-grade" class="input-field">
+          <option value="">اختر المادة / الصف</option>
+          ${grades.map(g => `<option value="${g}" ${t.grade === g ? 'selected' : ''}>${g}</option>`).join('')}
+        </select>
+        <div>
+          <label class="block text-sm font-bold mb-1 text-main">صورة المدرس</label>
+          <div class="flex items-center gap-3">
+            <div id="teach-img-prev" class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-border">
+              ${t.image ? `<img src="${t.image}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-muted"></i>`}
+            </div>
+            <input type="file" id="teach-img" accept="image/*" class="text-sm w-full file:bg-blue-500/10 file:text-blue-500 file:border-0 file:rounded-lg file:px-3 file:py-1">
+          </div>
+        </div>
+      </div>`,
+    actions: `<button id="save" class="btn-primary w-full">حفظ التعديلات</button>`
+  });
+
+  let newImgUrl = t.image || '';
+  m.root.querySelector('#teach-img').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    toast('جاري رفع الصورة...', 'info');
+    const fileName = `teacher_${t.id}_${Date.now()}.${file.name.split('.').pop()}`;
+    const { error } = await supabase.storage.from('images').upload(fileName, file);
+    if (error) { toast('فشل الرفع', 'error'); return; }
+    const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+    newImgUrl = data.publicUrl;
+    m.root.querySelector('#teach-img-prev').innerHTML = `<img src="${newImgUrl}" class="w-full h-full object-cover">`;
+    toast('تم', 'success');
+  };
+
+  m.root.querySelector('#save').onclick = async () => {
+    try {
+      const updates = {
+        name: m.root.querySelector('#et-name').value,
+        phone: m.root.querySelector('#et-phone').value,
+        grade: m.root.querySelector('#et-grade').value,
+        image: newImgUrl
+      };
+      const { error } = await supabase.from('profiles').update(updates).eq('id', t.id);
+      if (error) throw new Error(error.message);
+      toast('تم الحفظ بنجاح', 'success');
+      m.close(); location.reload();
+    } catch (err) { toast(err.message, 'error'); }
   };
 }
 
@@ -324,6 +496,19 @@ function openChargeModal(targetId) {
     await supabase.from('transactions').insert({ id: uid(), user_id: targetId, type: amt > 0 ? 'credit' : 'debit', amount: Math.abs(amt), note: 'تعديل يدوي من المالك' });
     toast('تم', 'success'); m.close(); location.reload();
   };
+}
+
+function socialInput(key, label, val, show) {
+  return `<div class="p-3 rounded-lg bg-black/5 dark:bg-black/20 border border-border mb-2">
+    <div class="flex justify-between items-center mb-2">
+      <span class="font-bold text-sm text-main">${label}</span>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="show-${key}" class="sr-only peer" ${show ? 'checked' : ''}>
+        <div class="w-9 h-5 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+      </label>
+    </div>
+    <input id="url-${key}" value="${escapeHtml(val || '')}" placeholder="https://..." class="input-field text-xs" dir="ltr">
+  </div>`;
 }
 
 function statCard(icon, label, val, colorClass) {

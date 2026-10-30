@@ -107,11 +107,9 @@ export default async function lessonView(el, params) {
   }
 }
 
-export async function openLectureEditor(lecture) { /* ... (نفس الكود القديم) */ }
 
-// ==========================================
-// دالة تعديل المحاضرة (اللي كانت ناقصة)
-// ==========================================
+
+// دالة تعديل المحاضرة
 export async function openLectureEditor(lecture) {
   const local = JSON.parse(JSON.stringify({ 
     videos: lecture.videos || [], 

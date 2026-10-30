@@ -13,7 +13,12 @@ const routes = {
   '#/teachers/:id': () => import('./views/teachers.js'),
   '#/student': () => import('./views/student.js'),
   '#/teacher': () => import('./views/teacher.js'),
+  // المسارات الجديدة للمالك
   '#/admin': () => import('./views/admin.js'),
+  '#/admin/students': () => import('./views/admin.js'),
+  '#/admin/teachers': () => import('./views/admin.js'),
+  '#/admin/codes': () => import('./views/admin.js'),
+  
   '#/exam/:lectureId/:examId': () => import('./views/exam.js'),
   '#/assignment/:lectureId/:examId': () => import('./views/assignment.js'),
   '#/notifications': () => import('./views/home.js'),
@@ -31,22 +36,29 @@ function matchRoute(hash) {
 
 function guard(pattern) {
   const role = store.profile?.role;
-  const privateRoutes = ['#/student', '#/teacher', '#/admin', '#/exam/:lectureId/:examId', '#/assignment/:lectureId/:examId'];
-  const needsAuth = privateRoutes.some(p => pattern.startsWith(p.split('/:')[0]));
+  const privateRoutes = ['#/student', '#/teacher', '#/admin', '#/exam', '#/assignment'];
+  const needsAuth = privateRoutes.some(p => pattern.startsWith(p));
   if (needsAuth && !store.profile) { toast('يجب تسجيل الدخول', 'warn'); return '#/login'; }
-  if (pattern === '#/admin' && role !== 'super_admin') { toast('غير مصرح', 'error'); return roleHomePath(role); }
+  if (pattern.startsWith('#/admin') && role !== 'super_admin') { toast('غير مصرح', 'error'); return roleHomePath(role); }
   if (pattern === '#/teacher' && role !== 'teacher' && role !== 'assistant' && role !== 'super_admin') { toast('غير مصرح', 'error'); return roleHomePath(role); }
   if (pattern === '#/student' && role !== 'student') { toast('غير مصرح', 'error'); return roleHomePath(role); }
   return null;
 }
 
 export async function route() {
-  const hash = location.hash || '#/home';
+  // قراءة الهاش الحالي، وتجاهل أي باراميترز زيادة
+  const hash = (location.hash || '#/home').split('?')[0];
   const m = matchRoute(hash);
   const main = document.getElementById('app-main');
-  if (!m) { main.innerHTML = `<div class="text-center py-20"><h2 class="text-2xl font-bold">404</h2></div>`; return; }
+  
+  if (!m) { 
+    main.innerHTML = `<div class="text-center py-20"><h2 class="text-2xl font-bold text-main">404 - الصفحة غير موجودة</h2></div>`; 
+    return; 
+  }
+  
   const redirect = guard(m.pattern);
   if (redirect) { location.hash = redirect; return; }
+  
   setLoading(main);
   try {
     const mod = await m.loader();

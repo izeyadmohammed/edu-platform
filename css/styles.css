@@ -138,18 +138,27 @@ body:not(.dark)
   text-shadow: 0 0 8px rgba(0, 0, 0, 1);
   white-space: nowrap;
   user-select: none;
-  animation: watermarkMove 12s linear infinite;
+  
 }
 
-@keyframes watermarkMove {
-  0%   { top: 10%; left: 10%; }
-  25%  { top: 15%; left: 60%; }
-  50%  { top: 60%; left: 50%; }
-  75%  { top: 70%; left: 10%; }
-  100% { top: 10%; left: 10%; }
-}
+
 
 /* في الوضع النهاري */
+body:not(.dark) .watermark-item {
+  color: rgba(0, 0, 0, 0.7);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 1);
+}
+
+.watermark-item {
+  position: absolute;
+  font-size: 24px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 1);
+  white-space: nowrap;
+  user-select: none;
+  transition: top 1s ease, left 1s ease; /* انتقال ناعم */
+}
 body:not(.dark) .watermark-item {
   color: rgba(0, 0, 0, 0.7);
   text-shadow: 0 0 8px rgba(255, 255, 255, 1);

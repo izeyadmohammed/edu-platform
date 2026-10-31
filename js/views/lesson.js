@@ -97,12 +97,14 @@ export default async function lessonView(el, params) {
   });
 
 
-  // إضافة العلامة المائية داخل الفيديو
+  
+
+
+  // إضافة العلامة المائية بحركة عشوائية
   if (p?.role === 'student') {
     (lecture.videos||[]).forEach(v => {
       const wrap = el.querySelector(`#vid-wrap-${v.id}`);
       if (wrap) {
-        // نتأكد إن الحاوية نسبية عشان العلامة تتحرك فيها
         wrap.style.position = 'relative';
         wrap.style.overflow = 'hidden';
         
@@ -113,6 +115,14 @@ export default async function lessonView(el, params) {
         span.textContent = p.name + ' - ' + (p.phone||'');
         layer.appendChild(span);
         wrap.appendChild(layer);
+
+        // حركة عشوائية كل 3 ثواني
+        setInterval(() => {
+          const top = Math.random() * 80; // من 0% لـ 80%
+          const left = Math.random() * 80; // من 0% لـ 80%
+          span.style.top = top + '%';
+          span.style.left = left + '%';
+        }, 3000); // كل 3 ثواني
       }
     });
   }

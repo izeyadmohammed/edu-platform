@@ -6,6 +6,8 @@ export default async function studentView(el) {
   const p = store.profile;
   if (!p) { el.innerHTML = `<p class="text-center">سجّل دخول</p>`; return; }
   
+  // جلب الكورسات المشترك فيها
+  const myCourses = store.courses.filter(c => p.enrolled_courses?.includes(c.id));
   const { data: txs } = await supabase.from('transactions').select('*').eq('user_id', p.id).order('created_at', { ascending: false }).limit(10);
   const { data: subs } = await supabase.from('exam_submissions').select('*').eq('student_id', p.id).order('submitted_at', { ascending: false });
 

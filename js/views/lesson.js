@@ -81,13 +81,7 @@ export default async function lessonView(el, params) {
     </div>
   `;
 
-  // إضافة العلامة المائية داخل الفيديو نفسه
-  if (p?.role === 'student') {
-    (lecture.videos||[]).forEach(v => {
-      const wrap = el.querySelector(`#vid-wrap-${v.id}`);
-      if (wrap) watermark(wrap, p.name + ' - ' + (p.phone||''));
-    });
-  }
+  
 
   // تفعيل زرار التكبير
   el.querySelectorAll('[data-fullscreen]').forEach(btn => {
@@ -101,6 +95,27 @@ export default async function lessonView(el, params) {
       }
     };
   });
+
+
+  // إضافة العلامة المائية داخل الفيديو
+  if (p?.role === 'student') {
+    (lecture.videos||[]).forEach(v => {
+      const wrap = el.querySelector(`#vid-wrap-${v.id}`);
+      if (wrap) {
+        // نتأكد إن الحاوية نسبية عشان العلامة تتحرك فيها
+        wrap.style.position = 'relative';
+        wrap.style.overflow = 'hidden';
+        
+        const layer = document.createElement('div');
+        layer.className = 'watermark-layer';
+        const span = document.createElement('span');
+        span.className = 'watermark-item';
+        span.textContent = p.name + ' - ' + (p.phone||'');
+        layer.appendChild(span);
+        wrap.appendChild(layer);
+      }
+    });
+  }
 
   if (canEdit) {
     el.querySelector('#edit-btn').onclick = () => openLectureEditor(lecture);

@@ -120,15 +120,11 @@ body {
 /* في الوضع النهاري العلامة تبان أوضح */
 body:not(.dark) 
 
-/* العلامة المائية (نسخة جديدة) */
-.video-wrapper {
-  position: relative;
-  overflow: hidden;
-}
 
+/* العلامة المائية */
 .watermark-layer {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0; left: 0; width: 100%; height: 100%;
   pointer-events: none;
   overflow: hidden;
   z-index: 50;
@@ -136,29 +132,25 @@ body:not(.dark)
 
 .watermark-item {
   position: absolute;
-  font-size: 22px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.35);
-  text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  font-size: 24px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 1);
   white-space: nowrap;
   user-select: none;
-  animation: watermarkMove 15s linear infinite;
-  top: 0;
-  left: 0;
+  animation: watermarkMove 12s linear infinite;
 }
 
-/* حركة سريعة نسبياً تلف في كل الحاوية */
 @keyframes watermarkMove {
-  0%   { transform: translate(5%, 10%); }
-  20%  { transform: translate(70%, 15%); }
-  40%  { transform: translate(60%, 70%); }
-  60%  { transform: translate(10%, 80%); }
-  80%  { transform: translate(50%, 40%); }
-  100% { transform: translate(5%, 10%); }
+  0%   { top: 10%; left: 10%; }
+  25%  { top: 15%; left: 60%; }
+  50%  { top: 60%; left: 50%; }
+  75%  { top: 70%; left: 10%; }
+  100% { top: 10%; left: 10%; }
 }
 
-/* الوضع النهاري */
+/* في الوضع النهاري */
 body:not(.dark) .watermark-item {
-  color: rgba(0, 0, 0, 0.35);
-  text-shadow: 0 0 6px rgba(255,255,255,0.8);
+  color: rgba(0, 0, 0, 0.7);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 1);
 }

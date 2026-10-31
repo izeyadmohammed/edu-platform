@@ -9,6 +9,23 @@ export default async function lessonView(el, params) {
   
   const p = store.profile;
   const canEdit = p && (p.role === 'super_admin' || p.id === lecture.teacher_id || (p.role === 'assistant' && p.teacher_id === lecture.teacher_id));
+  
+  // التحقق من صلاحية الوصول للمحاضرة
+  const { data: course } = await supabase.from('courses').select('*').eq('id', lecture.course_id).single();
+  const isFree = course?.price === 0;
+  const isEnrolled = p?.enrolled_courses?.includes(lecture.course_id);
+  
+  // لو الطالب مشترك أو الكورس مجاني، يقدر يدخل
+  if (p.role === 'student' && !isEnrolled && !isFree) {
+    el.innerHTML = `
+      <div class="glass-card max-w-lg mx-auto p-8 text-center animate-fade-up">
+        <i class="fa-solid fa-lock text-5xl text-red-500 mb-4"></i>
+        <h2 class="text-2xl font-bold mb-2">غير مصرح</h2>
+        <p class="text-muted mb-6">يجب الاشتراك في الكورس للوصول للمحاضرة</p>
+        <a href="#/courses/${lecture.course_id}" class="btn-primary">رجوع للكورس</a>
+      </div>`;
+    return;
+  }
 
   if (p.role === 'student') {
     const { data: prog } = await supabase.from('student_progress').select('id').eq('student_id', p.id).eq('lecture_id', lectureId).single();

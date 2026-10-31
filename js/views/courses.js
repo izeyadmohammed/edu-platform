@@ -72,8 +72,8 @@ async function courseDetail(el, id) {
             <p class="text-muted mb-6 leading-relaxed">${escapeHtml(course.description || 'لا يوجد وصف')}</p>
             <div class="flex items-center gap-4">
               <span class="text-2xl font-black text-primary">${formatMoney(course.price)}</span>
-              ${enrolled 
-                ? `<span class="px-6 py-2 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg font-bold"><i class="fa-solid fa-check mr-2"></i> مشترك</span>` 
+              ${enrolled || course.price === 0
+                ? `<span class="px-6 py-2 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg font-bold"><i class="fa-solid fa-check mr-2"></i> ${enrolled ? 'مشترك' : 'مجاني'}</span>` 
                 : `<button id="enroll-btn" class="btn-primary shadow-lg shadow-primary/20">اشترك الآن</button>`}
             </div>
           </div>
@@ -149,14 +149,33 @@ async function courseDetail(el, id) {
   `;
 
   const eb = el.querySelector('#enroll-btn');
-  if (eb) eb.onclick = async () => {
-    if (!store.profile) { toast('سجّل دخول أولاً', 'warn'); location.hash = '#/login'; return; }
-    try {
-      const { error } = await supabase.rpc('enroll_course', { course_id_input: id });
-      if (error) throw new Error(error.message);
-      toast('تم الاشتراك بنجاح', 'success');
-      const { loadProfile } = await import('../auth.js'); await loadProfile();
-      location.reload();
-    } catch (err) { toast(err.message, 'error'); }
-  };
+  if (eb) {
+    eb.onclick = async () => {
+      if (!store.profile) { toast('سجّل دخول أولاً', 'warn'); location.hash = '#/login'; return; }
+      
+      // لو الكورس مجاني (سعره 0)، اشترك تلقائياً
+      if (course.price === 0) {
+        try {
+          // نضيف الكورس لقائمة اشتراكاته بدون خصم رصيد
+          const { error } = await supabase.from('profiles').update({
+            enrolled_courses: [...(store.profile.enrolled_courses || []), id]
+          }).eq('id', store.profile.id);
+          if (error) throw new Error(error.message);
+          toast('تم فتح الكورس بنجاح', 'success');
+          const { loadProfile } = await import('../auth.js'); await loadProfile();
+          location.reload();
+        } catch (err) { toast(err.message, 'error'); }
+        return;
+      }
+
+      // الكورسات المدفوعة: نستخدم دالة enroll_course
+      try {
+        const { error } = await supabase.rpc('enroll_course', { course_id_input: id });
+        if (error) throw new Error(error.message);
+        toast('تم الاشتراك بنجاح', 'success');
+        const { loadProfile } = await import('../auth.js'); await loadProfile();
+        location.reload();
+      } catch (err) { toast(err.message, 'error'); }
+    };
+  }
 }

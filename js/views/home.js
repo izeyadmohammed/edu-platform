@@ -7,7 +7,7 @@ export default async function homeView(el) {
   
   // فلترة الكورسات للطالب حسب صفه فقط
   if (profile?.role === 'student' && profile.grade) {
-    courses = courses.filter(c => c.grade === profile.grade);
+    courses = courses.filter(c => c.grade === profile.grade || c.grade === 'كل المراحل');
   }
 
   el.innerHTML = `

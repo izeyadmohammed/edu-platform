@@ -145,6 +145,7 @@ export default async function teacherView(el) {
           <input id="t" placeholder="عنوان الكورس" class="input-field">
           <select id="g" class="input-field">
             <option value="">اختر الصف</option>
+            <option value="كل المراحل">كل المراحل</option>
             ${grades.map(g => `<option value="${g}">${g}</option>`).join('')}
           </select>
           <input id="pr" type="number" placeholder="السعر (ج.م)" class="input-field">
